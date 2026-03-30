@@ -1,0 +1,470 @@
+[
+    {
+        "id": "SYS-REQ-001",
+        "title": "ADC-based closed-loop control",
+        "description": "The system shall implement ADC-based closed-loop control using potentiometer feedback.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-002",
+        "title": "UART control and diagnostics",
+        "description": "The system shall provide UART-based control and diagnostics.",
+        "category": "Interface"
+    },
+    {
+        "id": "SYS-REQ-003",
+        "title": "Compliance with ISO 16750",
+        "description": "The system design shall consider compliance with ISO 16750 \u2013 Road Vehicles Environmental Conditions.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-004",
+        "title": "Compliance with ISO 7637",
+        "description": "The system design shall consider compliance with ISO 7637 \u2013 Electrical Transient Immunity.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-005",
+        "title": "Compliance with IEC 61000-4",
+        "description": "The system design shall consider compliance with IEC 61000-4 \u2013 EMC Immunity.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-006",
+        "title": "MISRA-C guidelines",
+        "description": "The system design shall consider compliance with MISRA-C \u2013 Software Coding Guidelines (Recommended).",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-007",
+        "title": "Actuator supply voltage",
+        "description": "Supply voltage shall be 12V DC.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-008",
+        "title": "Actuator feedback type",
+        "description": "Feedback type shall be analog potentiometer.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-009",
+        "title": "Read actuator feedback ADC",
+        "description": "The controller shall read the ADC value from the actuator feedback potentiometer.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-010",
+        "title": "Control actuator based on ADC",
+        "description": "The controller shall control the actuator based on the measured ADC value.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-011",
+        "title": "Stop at shipping position",
+        "description": "The controller shall stop the actuator at a defined shipping position represented by a configured ADC threshold.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-012",
+        "title": "UART ON/OFF control",
+        "description": "The controller shall allow actuator ON and OFF control through UART communication.",
+        "category": "Interface"
+    },
+    {
+        "id": "SYS-REQ-013",
+        "title": "Continuous ADC acquisition",
+        "description": "The system shall continuously acquire actuator feedback using the internal ADC.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-014",
+        "title": "ADC resolution",
+        "description": "ADC resolution shall be minimum 12-bit.",
+        "category": "Performance"
+    },
+    {
+        "id": "SYS-REQ-015",
+        "title": "ADC sampling frequency",
+        "description": "ADC sampling frequency shall be \u2265 1 kHz.",
+        "category": "Performance"
+    },
+    {
+        "id": "SYS-REQ-016",
+        "title": "ADC as primary feedback",
+        "description": "ADC value shall be treated as the primary feedback variable.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-017",
+        "title": "ADC-based flap control",
+        "description": "The system shall control flap actuation exclusively based on the measured ADC feedback value from the actuator potentiometer.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-018",
+        "title": "Flap actuation ADC range",
+        "description": "Flap actuation shall operate within an ADC range of 500 to 2600 counts.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-019",
+        "title": "Control decisions from ADC",
+        "description": "Control decisions shall be derived solely from the real-time ADC feedback signal.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-020",
+        "title": "No open-loop control",
+        "description": "Open-loop control shall not be permitted under any operating condition.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-021",
+        "title": "Actuator movement window",
+        "description": "The actuator shall move the flap only within the defined ADC window (500 \u2264 ADC \u2264 2600).",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-022",
+        "title": "Disable drive output out of range",
+        "description": "The actuator drive output shall be disabled immediately if ADC value falls below 500 or ADC value exceeds 2600.",
+        "category": "Safety"
+    },
+    {
+        "id": "SYS-REQ-023",
+        "title": "Stop at target ADC",
+        "description": "The actuator shall stop when the configured target ADC value within the 500\u20132600 range is reached.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-024",
+        "title": "Monitor power supply voltage",
+        "description": "The system shall monitor the external power supply voltage using an ADC channel through a resistive voltage divider network.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-025",
+        "title": "Scale and measure supply voltage",
+        "description": "The external supply voltage shall be scaled using a voltage divider and measured via an internal ADC channel.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-026",
+        "title": "Continuous ADC monitoring for supply voltage",
+        "description": "The measured ADC value shall be continuously monitored to determine the actual supply voltage.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-027",
+        "title": "Configurable overvoltage threshold",
+        "description": "A configurable threshold value (Overvoltage_Threshold) shall define the maximum permissible supply voltage.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-028",
+        "title": "Disable actuator on overvoltage",
+        "description": "When the measured supply voltage equals or exceeds the configured Overvoltage_Threshold: Actuator drive output shall be disabled immediately.",
+        "category": "Safety"
+    },
+    {
+        "id": "SYS-REQ-029",
+        "title": "Block actuator operation on overvoltage",
+        "description": "When the measured supply voltage equals or exceeds the configured Overvoltage_Threshold: Further actuator operation shall be blocked.",
+        "category": "Safety"
+    },
+    {
+        "id": "SYS-REQ-030",
+        "title": "Transition to FAULT on overvoltage",
+        "description": "When the measured supply voltage equals or exceeds the configured Overvoltage_Threshold: System state shall transition to FAULT.",
+        "category": "Safety"
+    },
+    {
+        "id": "SYS-REQ-031",
+        "title": "Transmit overvoltage fault message",
+        "description": "When the measured supply voltage equals or exceeds the configured Overvoltage_Threshold: UART diagnostic message \u201cOVERVOLTAGE_FAULT_ACTIVE\u201d shall be transmitted.",
+        "category": "Interface"
+    },
+    {
+        "id": "SYS-REQ-032",
+        "title": "FAULT state exit conditions",
+        "description": "The system shall remain in FAULT state until: Supply voltage returns within acceptable limits, and System reset or authorized UART command is received.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-033",
+        "title": "Continuous overvoltage detection",
+        "description": "The overvoltage detection mechanism shall operate continuously during all active system states.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-034",
+        "title": "UART-based actuator control",
+        "description": "The system shall allow actuator control via UART commands.",
+        "category": "Interface"
+    },
+    {
+        "id": "SYS-REQ-035",
+        "title": "Minimum UART commands",
+        "description": "Minimum supported commands: ACTUATOR_ON and ACTUATOR_OFF.",
+        "category": "Interface"
+    },
+    {
+        "id": "SYS-REQ-036",
+        "title": "ACTUATOR_ON behavior",
+        "description": "Upon receiving ACTUATOR_ON, actuator operation shall begin according to control logic.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-037",
+        "title": "ACTUATOR_OFF behavior",
+        "description": "Upon receiving ACTUATOR_OFF, actuator output shall be disabled immediately.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-038",
+        "title": "Invalid command handling",
+        "description": "Invalid commands shall be ignored and logged.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-039",
+        "title": "Nominal supply voltage",
+        "description": "Nominal Supply Voltage: 12V.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-040",
+        "title": "Supply operating range",
+        "description": "Operating Range: 9V \u2013 16V.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-041",
+        "title": "Reverse polarity protection",
+        "description": "Reverse polarity protection shall be implemented.",
+        "category": "Safety"
+    },
+    {
+        "id": "SYS-REQ-042",
+        "title": "Transient voltage suppression",
+        "description": "Transient voltage suppression shall be implemented.",
+        "category": "Safety"
+    },
+    {
+        "id": "SYS-REQ-043",
+        "title": "ADC resolution",
+        "description": "ADC resolution: Minimum 12-bit.",
+        "category": "Performance"
+    },
+    {
+        "id": "SYS-REQ-044",
+        "title": "ADC reference voltage",
+        "description": "Reference Voltage: 3.3V.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-045",
+        "title": "ADC sampling frequency",
+        "description": "Sampling frequency: \u2265 1 kHz.",
+        "category": "Performance"
+    },
+    {
+        "id": "SYS-REQ-046",
+        "title": "ADC input overvoltage protection",
+        "description": "ADC input shall include overvoltage protection.",
+        "category": "Safety"
+    },
+    {
+        "id": "SYS-REQ-047",
+        "title": "MCU required peripherals",
+        "description": "The MCU shall provide: 12-bit ADC \u2013 PA1, GPIO Actuator Control Pin \u2013 PA5, Advanced PWM Timers, UART (\u22651 channel), DMA support, Independent Watchdog.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-048",
+        "title": "System clock configuration",
+        "description": "System clock shall be configured to ensure stable control loop operation.",
+        "category": "Performance"
+    },
+    {
+        "id": "SYS-REQ-049",
+        "title": "Layered software architecture",
+        "description": "The software shall follow a layered architecture: HAL Layer, Driver Layer, Middleware Layer, Application Layer.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-050",
+        "title": "Operating states",
+        "description": "The system shall implement the following states: INIT, IDLE, ACTIVE, SHIPPING_LOCK, FAULT.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-051",
+        "title": "Independent watchdog",
+        "description": "An independent watchdog shall be implemented.",
+        "category": "Safety"
+    },
+    {
+        "id": "SYS-REQ-052",
+        "title": "Automatic reset on malfunction",
+        "description": "The system shall reset automatically in case of software malfunction.",
+        "category": "Safety"
+    },
+    {
+        "id": "SYS-REQ-053",
+        "title": "Closed-loop control using ADC feedback",
+        "description": "Closed-loop control shall be implemented using ADC feedback only.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-054",
+        "title": "Control loop frequency",
+        "description": "Control loop frequency shall be \u2265 1 kHz.",
+        "category": "Performance"
+    },
+    {
+        "id": "SYS-REQ-055",
+        "title": "Actuator stop at thresholds",
+        "description": "Actuator shall stop at configured ADC thresholds.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-056",
+        "title": "Prevent oscillation or instability",
+        "description": "Control logic shall prevent oscillation or unstable behavior.",
+        "category": "Performance"
+    },
+    {
+        "id": "SYS-REQ-057",
+        "title": "No position or angle conversion",
+        "description": "No physical position or angle conversion shall be implemented.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-058",
+        "title": "Periodic UART transmission",
+        "description": "The system shall periodically transmit: Raw ADC value, System state, Shipping lock status, Fault flags.",
+        "category": "Interface"
+    },
+    {
+        "id": "SYS-REQ-059",
+        "title": "UART baud rate",
+        "description": "UART Configuration: Baud Rate: 115200.",
+        "category": "Interface"
+    },
+    {
+        "id": "SYS-REQ-060",
+        "title": "UART format",
+        "description": "UART Configuration: Format: 8N1.",
+        "category": "Interface"
+    },
+    {
+        "id": "SYS-REQ-061",
+        "title": "UART transmission interval",
+        "description": "UART Configuration: Transmission interval \u2264 100 ms.",
+        "category": "Performance"
+    },
+    {
+        "id": "SYS-REQ-062",
+        "title": "Protection and diagnostics functions",
+        "description": "The system shall implement: Overcurrent shutdown, Thermal shutdown (MCU internal temperature monitoring), Stall detection, Short-circuit protection, Undervoltage detection (<9V), Watchdog supervision.",
+        "category": "Safety"
+    },
+    {
+        "id": "SYS-REQ-063",
+        "title": "Fault transition on any fault",
+        "description": "Any fault condition shall transition the system to FAULT state.",
+        "category": "Safety"
+    },
+    {
+        "id": "SYS-REQ-064",
+        "title": "Operating temperature range",
+        "description": "Operating Temperature: -40\u00b0C to +85\u00b0C.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-065",
+        "title": "Storage temperature range",
+        "description": "Storage Temperature: -40\u00b0C to +105\u00b0C.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-066",
+        "title": "Humidity requirement",
+        "description": "Humidity: 95% RH non-condensing.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-067",
+        "title": "POC continuous ADC acquisition",
+        "description": "The POC shall demonstrate: Continuous ADC acquisition.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-068",
+        "title": "POC actuator control via ADC feedback",
+        "description": "The POC shall demonstrate: Actuator control based on ADC feedback.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-069",
+        "title": "POC hard stop at Shipping_ADC_Value",
+        "description": "The POC shall demonstrate: Hard stop at configured Shipping_ADC_Value.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-070",
+        "title": "POC UART ON/OFF control",
+        "description": "The POC shall demonstrate: Successful ON/OFF control via UART.",
+        "category": "Interface"
+    },
+    {
+        "id": "SYS-REQ-071",
+        "title": "POC fault detection and state transition",
+        "description": "The POC shall demonstrate: Correct fault detection and system state transition.",
+        "category": "Functional"
+    },
+    {
+        "id": "SYS-REQ-072",
+        "title": "Deliver system architecture diagram",
+        "description": "Supplier shall provide: System Architecture Diagram.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-073",
+        "title": "Deliver schematic",
+        "description": "Supplier shall provide: Schematic.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-074",
+        "title": "Deliver PCB layout",
+        "description": "Supplier shall provide: PCB Layout.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-075",
+        "title": "Deliver firmware source code",
+        "description": "Supplier shall provide: Firmware Source Code.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-076",
+        "title": "Deliver calibration procedure",
+        "description": "Supplier shall provide: Calibration Procedure.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-077",
+        "title": "Deliver test report",
+        "description": "Supplier shall provide: Test Report.",
+        "category": "Constraint"
+    },
+    {
+        "id": "SYS-REQ-078",
+        "title": "Deliver demonstration video",
+        "description": "Supplier shall provide: Demonstration Video.",
+        "category": "Constraint"
+    }
+]

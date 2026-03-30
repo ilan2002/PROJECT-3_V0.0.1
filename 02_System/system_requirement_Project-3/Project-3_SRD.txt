@@ -1,0 +1,180 @@
+System Requirements Document (SRD)
+Project: Project-3
+Date: 2025-03-08
+Version: 1.0
+
+1. Introduction & Purpose
+This System Requirements Document (SRD) defines the system-level requirements for Project-3. The purpose of this document is to establish clear, testable, and traceable requirements to guide design, implementation, verification, and validation of the system.
+
+2. Scope
+The scope of Project-3 includes closed-loop actuator control using ADC-based feedback, UART-based control and diagnostics, safety protection mechanisms, environmental and compliance constraints, and defined deliverables for development. The system shall operate within automotive environmental and EMC constraints and provide the specified functional behavior, interfaces, and performance.
+
+3. Requirements by Category
+
+3.1 Functional Requirements
+- SYS-REQ-001: The system shall implement ADC-based closed-loop control using potentiometer feedback.
+- SYS-REQ-009: The controller shall read the ADC value from the actuator feedback potentiometer.
+- SYS-REQ-010: The controller shall control the actuator based on the measured ADC value.
+- SYS-REQ-011: The controller shall stop the actuator at a defined shipping position represented by a configured ADC threshold.
+- SYS-REQ-013: The system shall continuously acquire actuator feedback using the internal ADC.
+- SYS-REQ-016: ADC value shall be treated as the primary feedback variable.
+- SYS-REQ-017: The system shall control flap actuation exclusively based on the measured ADC feedback value from the actuator potentiometer.
+- SYS-REQ-019: Control decisions shall be derived solely from the real-time ADC feedback signal.
+- SYS-REQ-023: The actuator shall stop when the configured target ADC value within the 500–2600 range is reached.
+- SYS-REQ-024: The system shall monitor the external power supply voltage using an ADC channel through a resistive voltage divider network.
+- SYS-REQ-025: The external supply voltage shall be scaled using a voltage divider and measured via an internal ADC channel.
+- SYS-REQ-026: The measured ADC value shall be continuously monitored to determine the actual supply voltage.
+- SYS-REQ-027: A configurable threshold value (Overvoltage_Threshold) shall define the maximum permissible supply voltage.
+- SYS-REQ-032: The system shall remain in FAULT state until: supply voltage returns within acceptable limits, and system reset or authorized UART command is received.
+- SYS-REQ-033: The overvoltage detection mechanism shall operate continuously during all active system states.
+- SYS-REQ-036: Upon receiving ACTUATOR_ON, actuator operation shall begin according to control logic.
+- SYS-REQ-037: Upon receiving ACTUATOR_OFF, actuator output shall be disabled immediately.
+- SYS-REQ-038: Invalid commands shall be ignored and logged.
+- SYS-REQ-050: The system shall implement the following states: INIT, IDLE, ACTIVE, SHIPPING_LOCK, FAULT.
+- SYS-REQ-053: Closed-loop control shall be implemented using ADC feedback only.
+- SYS-REQ-055: Actuator shall stop at configured ADC thresholds.
+- SYS-REQ-067: The POC shall demonstrate continuous ADC acquisition.
+- SYS-REQ-068: The POC shall demonstrate actuator control based on ADC feedback.
+- SYS-REQ-069: The POC shall demonstrate hard stop at configured Shipping_ADC_Value.
+- SYS-REQ-071: The POC shall demonstrate correct fault detection and system state transition.
+
+3.2 Interface Requirements
+- SYS-REQ-002: The system shall provide UART-based control and diagnostics.
+- SYS-REQ-012: The controller shall allow actuator ON and OFF control through UART communication.
+- SYS-REQ-031: When the measured supply voltage equals or exceeds the configured Overvoltage_Threshold, UART diagnostic message “OVERVOLTAGE_FAULT_ACTIVE” shall be transmitted.
+- SYS-REQ-034: The system shall allow actuator control via UART commands.
+- SYS-REQ-035: Minimum supported commands: ACTUATOR_ON and ACTUATOR_OFF.
+- SYS-REQ-058: The system shall periodically transmit: raw ADC value, system state, shipping lock status, fault flags.
+- SYS-REQ-059: UART Configuration: Baud Rate: 115200.
+- SYS-REQ-060: UART Configuration: Format: 8N1.
+- SYS-REQ-070: The POC shall demonstrate successful ON/OFF control via UART.
+
+3.3 Performance Requirements
+- SYS-REQ-014: ADC resolution shall be minimum 12-bit.
+- SYS-REQ-015: ADC sampling frequency shall be ≥ 1 kHz.
+- SYS-REQ-043: ADC resolution: minimum 12-bit.
+- SYS-REQ-045: Sampling frequency: ≥ 1 kHz.
+- SYS-REQ-048: System clock shall be configured to ensure stable control loop operation.
+- SYS-REQ-054: Control loop frequency shall be ≥ 1 kHz.
+- SYS-REQ-056: Control logic shall prevent oscillation or unstable behavior.
+- SYS-REQ-061: UART configuration: transmission interval ≤ 100 ms.
+
+3.4 Safety Requirements
+- SYS-REQ-022: The actuator drive output shall be disabled immediately if ADC value falls below 500 or ADC value exceeds 2600.
+- SYS-REQ-028: When the measured supply voltage equals or exceeds Overvoltage_Threshold, actuator drive output shall be disabled immediately.
+- SYS-REQ-029: When the measured supply voltage equals or exceeds Overvoltage_Threshold, further actuator operation shall be blocked.
+- SYS-REQ-030: When the measured supply voltage equals or exceeds Overvoltage_Threshold, system state shall transition to FAULT.
+- SYS-REQ-041: Reverse polarity protection shall be implemented.
+- SYS-REQ-042: Transient voltage suppression shall be implemented.
+- SYS-REQ-046: ADC input shall include overvoltage protection.
+- SYS-REQ-051: An independent watchdog shall be implemented.
+- SYS-REQ-052: The system shall reset automatically in case of software malfunction.
+- SYS-REQ-062: The system shall implement: overcurrent shutdown, thermal shutdown (MCU internal temperature monitoring), stall detection, short-circuit protection, undervoltage detection (<9V), watchdog supervision.
+- SYS-REQ-063: Any fault condition shall transition the system to FAULT state.
+
+3.5 Constraint Requirements
+- SYS-REQ-003: The system design shall consider compliance with ISO 16750 – Road Vehicles Environmental Conditions.
+- SYS-REQ-004: The system design shall consider compliance with ISO 7637 – Electrical Transient Immunity.
+- SYS-REQ-005: The system design shall consider compliance with IEC 61000-4 – EMC Immunity.
+- SYS-REQ-006: The system design shall consider compliance with MISRA-C – Software Coding Guidelines (Recommended).
+- SYS-REQ-007: Supply voltage shall be 12V DC.
+- SYS-REQ-008: Feedback type shall be analog potentiometer.
+- SYS-REQ-018: Flap actuation shall operate within an ADC range of 500 to 2600 counts.
+- SYS-REQ-020: Open-loop control shall not be permitted under any operating condition.
+- SYS-REQ-021: The actuator shall move the flap only within the defined ADC window (500 ≤ ADC ≤ 2600).
+- SYS-REQ-039: Nominal Supply Voltage: 12V.
+- SYS-REQ-040: Operating Range: 9V – 16V.
+- SYS-REQ-044: Reference Voltage: 3.3V.
+- SYS-REQ-047: The MCU shall provide: 12-bit ADC – PA1, GPIO Actuator Control Pin – PA5, Advanced PWM Timers, UART (≥1 channel), DMA support, Independent Watchdog.
+- SYS-REQ-049: The software shall follow a layered architecture: HAL Layer, Driver Layer, Middleware Layer, Application Layer.
+- SYS-REQ-057: No physical position or angle conversion shall be implemented.
+- SYS-REQ-064: Operating Temperature: -40°C to +85°C.
+- SYS-REQ-065: Storage Temperature: -40°C to +105°C.
+- SYS-REQ-066: Humidity: 95% RH non-condensing.
+- SYS-REQ-072: Supplier shall provide: System Architecture Diagram.
+- SYS-REQ-073: Supplier shall provide: Schematic.
+- SYS-REQ-074: Supplier shall provide: PCB Layout.
+- SYS-REQ-075: Supplier shall provide: Firmware Source Code.
+- SYS-REQ-076: Supplier shall provide: Calibration Procedure.
+- SYS-REQ-077: Supplier shall provide: Test Report.
+- SYS-REQ-078: Supplier shall provide: Demonstration Video.
+
+4. Summary Table (ID | Title | Category)
+- SYS-REQ-001 | ADC-based closed-loop control | Functional
+- SYS-REQ-002 | UART control and diagnostics | Interface
+- SYS-REQ-003 | Compliance with ISO 16750 | Constraint
+- SYS-REQ-004 | Compliance with ISO 7637 | Constraint
+- SYS-REQ-005 | Compliance with IEC 61000-4 | Constraint
+- SYS-REQ-006 | MISRA-C guidelines | Constraint
+- SYS-REQ-007 | Actuator supply voltage | Constraint
+- SYS-REQ-008 | Actuator feedback type | Constraint
+- SYS-REQ-009 | Read actuator feedback ADC | Functional
+- SYS-REQ-010 | Control actuator based on ADC | Functional
+- SYS-REQ-011 | Stop at shipping position | Functional
+- SYS-REQ-012 | UART ON/OFF control | Interface
+- SYS-REQ-013 | Continuous ADC acquisition | Functional
+- SYS-REQ-014 | ADC resolution | Performance
+- SYS-REQ-015 | ADC sampling frequency | Performance
+- SYS-REQ-016 | ADC as primary feedback | Functional
+- SYS-REQ-017 | ADC-based flap control | Functional
+- SYS-REQ-018 | Flap actuation ADC range | Constraint
+- SYS-REQ-019 | Control decisions from ADC | Functional
+- SYS-REQ-020 | No open-loop control | Constraint
+- SYS-REQ-021 | Actuator movement window | Constraint
+- SYS-REQ-022 | Disable drive output out of range | Safety
+- SYS-REQ-023 | Stop at target ADC | Functional
+- SYS-REQ-024 | Monitor power supply voltage | Functional
+- SYS-REQ-025 | Scale and measure supply voltage | Functional
+- SYS-REQ-026 | Continuous ADC monitoring for supply voltage | Functional
+- SYS-REQ-027 | Configurable overvoltage threshold | Functional
+- SYS-REQ-028 | Disable actuator on overvoltage | Safety
+- SYS-REQ-029 | Block actuator operation on overvoltage | Safety
+- SYS-REQ-030 | Transition to FAULT on overvoltage | Safety
+- SYS-REQ-031 | Transmit overvoltage fault message | Interface
+- SYS-REQ-032 | FAULT state exit conditions | Functional
+- SYS-REQ-033 | Continuous overvoltage detection | Functional
+- SYS-REQ-034 | UART-based actuator control | Interface
+- SYS-REQ-035 | Minimum UART commands | Interface
+- SYS-REQ-036 | ACTUATOR_ON behavior | Functional
+- SYS-REQ-037 | ACTUATOR_OFF behavior | Functional
+- SYS-REQ-038 | Invalid command handling | Functional
+- SYS-REQ-039 | Nominal supply voltage | Constraint
+- SYS-REQ-040 | Supply operating range | Constraint
+- SYS-REQ-041 | Reverse polarity protection | Safety
+- SYS-REQ-042 | Transient voltage suppression | Safety
+- SYS-REQ-043 | ADC resolution | Performance
+- SYS-REQ-044 | ADC reference voltage | Constraint
+- SYS-REQ-045 | ADC sampling frequency | Performance
+- SYS-REQ-046 | ADC input overvoltage protection | Safety
+- SYS-REQ-047 | MCU required peripherals | Constraint
+- SYS-REQ-048 | System clock configuration | Performance
+- SYS-REQ-049 | Layered software architecture | Constraint
+- SYS-REQ-050 | Operating states | Functional
+- SYS-REQ-051 | Independent watchdog | Safety
+- SYS-REQ-052 | Automatic reset on malfunction | Safety
+- SYS-REQ-053 | Closed-loop control using ADC feedback | Functional
+- SYS-REQ-054 | Control loop frequency | Performance
+- SYS-REQ-055 | Actuator stop at thresholds | Functional
+- SYS-REQ-056 | Prevent oscillation or instability | Performance
+- SYS-REQ-057 | No position or angle conversion | Constraint
+- SYS-REQ-058 | Periodic UART transmission | Interface
+- SYS-REQ-059 | UART baud rate | Interface
+- SYS-REQ-060 | UART format | Interface
+- SYS-REQ-061 | UART transmission interval | Performance
+- SYS-REQ-062 | Protection and diagnostics functions | Safety
+- SYS-REQ-063 | Fault transition on any fault | Safety
+- SYS-REQ-064 | Operating temperature range | Constraint
+- SYS-REQ-065 | Storage temperature range | Constraint
+- SYS-REQ-066 | Humidity requirement | Constraint
+- SYS-REQ-067 | POC continuous ADC acquisition | Functional
+- SYS-REQ-068 | POC actuator control via ADC feedback | Functional
+- SYS-REQ-069 | POC hard stop at Shipping_ADC_Value | Functional
+- SYS-REQ-070 | POC UART ON/OFF control | Interface
+- SYS-REQ-071 | POC fault detection and state transition | Functional
+- SYS-REQ-072 | Deliver system architecture diagram | Constraint
+- SYS-REQ-073 | Deliver schematic | Constraint
+- SYS-REQ-074 | Deliver PCB layout | Constraint
+- SYS-REQ-075 | Deliver firmware source code | Constraint
+- SYS-REQ-076 | Deliver calibration procedure | Constraint
+- SYS-REQ-077 | Deliver test report | Constraint
+- SYS-REQ-078 | Deliver demonstration video | Constraint
