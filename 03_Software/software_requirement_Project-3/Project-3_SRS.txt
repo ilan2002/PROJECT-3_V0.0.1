@@ -1,0 +1,720 @@
+**Software Requirements Specification (SRS)**  
+**Project:** Project-3  
+**Date:** 2025-02-14  
+**Version:** 1.0  
+
+---
+
+## 1. Introduction & Purpose
+This Software Requirements Specification (SRS) defines the software requirements for Project-3 in accordance with IEEE 830. The purpose of this document is to specify functional, performance, interface, reliability, maintainability, and constraint requirements with traceability to system-level requirements.
+
+## 2. Scope
+Project-3 software provides closed-loop actuator control using ADC-based potentiometer feedback, UART command/diagnostic interfaces, voltage monitoring, fault handling, and safety-related behaviors. The software shall operate on embedded hardware with ADC, PWM, UART, DMA, and watchdog support.
+
+## 3. Overall Description
+### 3.1 Product Perspective
+The software is an embedded firmware component operating on a microcontroller platform with ADC, GPIO, PWM timer, UART, DMA, and watchdog peripherals. It interacts with an actuator and sensors (potentiometer, supply voltage, current, temperature).
+
+### 3.2 Assumptions and Dependencies
+- 12 V actuator supply is available (nominal).
+- ADC reference is 3.3 V; ADC supports at least 12-bit resolution.
+- UART hardware supports 115200 baud, 8N1.
+- Hardware provides current and temperature sensing or indicators.
+- Non-volatile memory is available for parameters and fault logging.
+
+---
+
+## 4. Software Requirements (Organized by Category)
+
+### 4.1 Functional Requirements
+**SW-REQ-001 — Closed-loop control algorithm**  
+Description: The system shall implement a closed-loop control algorithm that uses the potentiometer feedback ADC value to compute actuator drive commands.  
+Priority: High  
+Traceability: SYS-REQ-001  
+
+**SW-REQ-011 — Potentiometer feedback configuration**  
+Description: The system shall configure a single analog input channel for the actuator potentiometer feedback.  
+Priority: High  
+Traceability: SYS-REQ-008  
+
+**SW-REQ-012 — ADC read function**  
+Description: The system shall read the actuator feedback potentiometer via the ADC and provide the raw and scaled values to the control algorithm.  
+Priority: High  
+Traceability: SYS-REQ-009  
+
+**SW-REQ-013 — ADC scaling to position**  
+Description: The system shall scale the ADC reading to a normalized position value in the range 0.0 to 1.0 using configurable minimum and maximum calibration values.  
+Priority: Medium  
+Traceability: SYS-REQ-009  
+
+**SW-REQ-014 — Actuator control output**  
+Description: The system shall compute and update actuator control output based on the measured ADC position and the commanded target position at each control cycle.  
+Priority: High  
+Traceability: SYS-REQ-010  
+
+**SW-REQ-017 — Shipping position threshold configuration**  
+Description: The system shall store a configurable ADC threshold value representing the shipping position in non-volatile memory and use it for control decisions.  
+Priority: High  
+Traceability: SYS-REQ-011  
+
+**SW-REQ-018 — Stop at shipping position**  
+Description: The system shall stop actuator drive within 20 ms after the ADC feedback value crosses the configured shipping position threshold.  
+Priority: High  
+Traceability: SYS-REQ-011  
+
+**SW-REQ-022 — Continuous ADC acquisition loop**  
+Description: The system shall continuously sample the actuator potentiometer using the internal ADC without gaps longer than 2 ms during normal operation.  
+Priority: High  
+Traceability: SYS-REQ-013  
+
+**SW-REQ-025 — ADC as primary feedback variable**  
+Description: The system shall use the latest ADC sample as the primary feedback variable for all actuator control computations.  
+Priority: High  
+Traceability: SYS-REQ-016  
+
+**SW-REQ-026 — ADC-only flap control inputs**  
+Description: The system shall compute flap actuation commands using only the measured ADC feedback value and configured thresholds, with no other sensor inputs.  
+Priority: High  
+Traceability: SYS-REQ-017  
+
+**SW-REQ-028 — Control decisions based on real-time ADC**  
+Description: The system shall base each control decision on the most recent ADC sample that is no older than 2 ms.  
+Priority: High  
+Traceability: SYS-REQ-019  
+
+**SW-REQ-030 — ADC validity monitoring**  
+Description: The system shall flag ADC feedback as invalid if no new sample is acquired within 2 ms or if the ADC value is out of the 0 to 4095 range.  
+Priority: High  
+Traceability: SYS-REQ-020  
+
+**SW-REQ-033 — Disable drive on ADC out of range**  
+Description: The system shall disable the actuator drive output within one control loop cycle when the measured ADC value is less than 500 or greater than 2600.  
+Priority: High  
+Traceability: SYS-REQ-022  
+
+**SW-REQ-034 — Stop at target ADC**  
+Description: The system shall stop actuator movement when the measured ADC value is within ±1 count of the configured target ADC value.  
+Priority: High  
+Traceability: SYS-REQ-023  
+
+**SW-REQ-036 — Compute scaled supply voltage**  
+Description: The system shall compute the external supply voltage by applying the configured divider ratio to the measured ADC value.  
+Priority: High  
+Traceability: SYS-REQ-025  
+
+**SW-REQ-039 — Overvoltage detection**  
+Description: The system shall declare an overvoltage condition when the computed supply voltage is greater than or equal to Overvoltage_Threshold.  
+Priority: High  
+Traceability: SYS-REQ-027  
+
+**SW-REQ-040 — Disable drive on overvoltage**  
+Description: The system shall disable the actuator drive output within one control loop cycle of detecting an overvoltage condition.  
+Priority: High  
+Traceability: SYS-REQ-028  
+
+**SW-REQ-041 — Block actuator commands during overvoltage**  
+Description: The system shall ignore or reject all actuator movement commands while an overvoltage condition is present.  
+Priority: High  
+Traceability: SYS-REQ-029  
+
+**SW-REQ-042 — Enter fault state on overvoltage**  
+Description: The system shall transition to the FAULT state within one control loop cycle of detecting an overvoltage condition.  
+Priority: High  
+Traceability: SYS-REQ-030  
+
+**SW-REQ-044 — Maintain FAULT state until clear conditions**  
+Description: The system shall remain in FAULT state until both conditions are true: (1) the measured supply voltage is within acceptable limits, and (2) a system reset or authorized UART command to clear fault is received.  
+Priority: High  
+Traceability: SYS-REQ-032  
+
+**SW-REQ-046 — Continuous overvoltage monitoring**  
+Description: The system shall sample the supply voltage and evaluate overvoltage status at least once every 100 ms during all active system states.  
+Priority: High  
+Traceability: SYS-REQ-033  
+
+**SW-REQ-050 — ACTUATOR_ON execution**  
+Description: Upon receiving a valid "ACTUATOR_ON" command, the system shall initiate actuator operation according to configured control logic within 100 ms.  
+Priority: High  
+Traceability: SYS-REQ-036  
+
+**SW-REQ-051 — ACTUATOR_OFF execution**  
+Description: Upon receiving a valid "ACTUATOR_OFF" command, the system shall disable the actuator output within 50 ms.  
+Priority: High  
+Traceability: SYS-REQ-037  
+
+**SW-REQ-052 — Ignore invalid UART commands**  
+Description: The system shall take no actuator state change when an invalid UART command is received.  
+Priority: Medium  
+Traceability: SYS-REQ-038  
+
+**SW-REQ-053 — Log invalid UART commands**  
+Description: The system shall log each invalid UART command with a timestamp and the received raw command string.  
+Priority: Medium  
+Traceability: SYS-REQ-038  
+
+**SW-REQ-064 — PWM timer initialization**  
+Description: The system shall initialize an advanced PWM timer to generate actuator control signals.  
+Priority: High  
+Traceability: SYS-REQ-047  
+
+**SW-REQ-070 — State machine implementation**  
+Description: The system shall implement a state machine with the states INIT, IDLE, ACTIVE, SHIPPING_LOCK, and FAULT.  
+Priority: High  
+Traceability: SYS-REQ-050  
+
+**SW-REQ-071 — Initial state on reset**  
+Description: The system shall enter the INIT state on every reset or power-up.  
+Priority: High  
+Traceability: SYS-REQ-050  
+
+**SW-REQ-072 — Nominal state transitions**  
+Description: The system shall transition from INIT to IDLE after successful initialization, from IDLE to ACTIVE upon receiving an activate command, from ACTIVE to SHIPPING_LOCK upon receiving a shipping lock command, and from SHIPPING_LOCK to IDLE upon receiving an unlock command.  
+Priority: Medium  
+Traceability: SYS-REQ-050  
+
+**SW-REQ-077 — ADC-only feedback for control**  
+Description: The system shall compute closed-loop control outputs using only raw ADC feedback values and internal control state, without using any other sensor inputs.  
+Priority: High  
+Traceability: SYS-REQ-053  
+
+**SW-REQ-079 — Threshold-based actuator stop**  
+Description: The system shall command the actuator to stop within one control loop cycle when the ADC value is at or beyond the configured stop thresholds.  
+Priority: High  
+Traceability: SYS-REQ-055  
+
+**SW-REQ-086 — Overcurrent shutdown**  
+Description: The system shall monitor motor current and, when the measured current exceeds a configurable overcurrent threshold, disable the actuator output and raise a fault.  
+Priority: High  
+Traceability: SYS-REQ-062  
+
+**SW-REQ-087 — Thermal shutdown**  
+Description: The system shall monitor the MCU internal temperature sensor and, when the measured temperature exceeds a configurable thermal threshold, disable the actuator output and raise a fault.  
+Priority: High  
+Traceability: SYS-REQ-062  
+
+**SW-REQ-088 — Stall detection**  
+Description: The system shall detect a stall condition when the actuator is commanded to move and the ADC feedback change remains below a configurable delta for a configurable duration, and shall raise a fault.  
+Priority: High  
+Traceability: SYS-REQ-062  
+
+**SW-REQ-089 — Short-circuit protection**  
+Description: The system shall detect a short-circuit condition using available hardware indicators or current measurements and, upon detection, disable the actuator output and raise a fault.  
+Priority: High  
+Traceability: SYS-REQ-062  
+
+**SW-REQ-090 — Undervoltage detection**  
+Description: The system shall monitor supply voltage and, when the measured voltage is below 9 V, disable the actuator output and raise a fault.  
+Priority: High  
+Traceability: SYS-REQ-062  
+
+**SW-REQ-092 — Fault state transition**  
+Description: The system shall transition the state machine to FAULT state in the same processing cycle in which any fault condition is detected.  
+Priority: High  
+Traceability: SYS-REQ-063  
+
+**SW-REQ-096 — Continuous ADC acquisition**  
+Description: The system shall sample the ADC continuously during powered operation at a fixed periodic rate and make the latest sample available to the control loop each cycle.  
+Priority: High  
+Traceability: SYS-REQ-067  
+
+**SW-REQ-097 — ADC feedback control**  
+Description: The system shall compute and update actuator commands using the most recent ADC feedback on each control loop iteration.  
+Priority: High  
+Traceability: SYS-REQ-068  
+
+**SW-REQ-098 — Hard stop at Shipping_ADC_Value**  
+Description: The system shall stop actuator motion and prevent further motion toward the limit when the ADC feedback reaches the configured Shipping_ADC_Value threshold.  
+Priority: High  
+Traceability: SYS-REQ-069  
+
+**SW-REQ-100 — Fault condition detection**  
+Description: The system shall monitor all defined fault inputs and detect a fault within 100 ms of the fault condition becoming true.  
+Priority: High  
+Traceability: SYS-REQ-071  
+
+**SW-REQ-101 — Fault reporting**  
+Description: The system shall log each detected fault with a timestamp and fault code to non-volatile storage within 1 s of detection.  
+Priority: High  
+Traceability: SYS-REQ-071  
+
+**SW-REQ-102 — State transition on fault**  
+Description: The system shall transition from NORMAL to FAULT state within 500 ms after any fault is detected.  
+Priority: High  
+Traceability: SYS-REQ-071  
+
+**SW-REQ-103 — State transition recovery**  
+Description: The system shall transition from FAULT to NORMAL state only after all faults are cleared and a recovery command is received.  
+Priority: Medium  
+Traceability: SYS-REQ-071  
+
+---
+
+### 4.2 Performance Requirements
+**SW-REQ-002 — ADC sampling for feedback**  
+Description: The system shall sample the feedback ADC channel at a configurable rate between 100 Hz and 1 kHz with a default of 500 Hz.  
+Priority: Medium  
+Traceability: SYS-REQ-001  
+
+**SW-REQ-015 — Control loop timing**  
+Description: The system shall execute the control loop at a fixed period of 10 ms ±1 ms.  
+Priority: Medium  
+Traceability: SYS-REQ-010  
+
+**SW-REQ-023 — ADC resolution configuration**  
+Description: The system shall configure the internal ADC to operate at 12-bit resolution or higher.  
+Priority: High  
+Traceability: SYS-REQ-014  
+
+**SW-REQ-024 — ADC sampling rate**  
+Description: The system shall sample the internal ADC at a rate of at least 1000 samples per second.  
+Priority: High  
+Traceability: SYS-REQ-015  
+
+**SW-REQ-037 — Continuous supply monitoring**  
+Description: The system shall sample and update the computed supply voltage at least once per control loop cycle.  
+Priority: High  
+Traceability: SYS-REQ-026  
+
+**SW-REQ-045 — FAULT exit voltage check**  
+Description: The system shall evaluate the supply voltage for FAULT exit using the configured acceptable limits at least once every 100 ms while in FAULT state.  
+Priority: Medium  
+Traceability: SYS-REQ-032  
+
+**SW-REQ-066 — DMA usage for data transfer**  
+Description: The system shall configure DMA support for ADC data transfers to reduce CPU load during sampling.  
+Priority: Medium  
+Traceability: SYS-REQ-047  
+
+**SW-REQ-068 — Control loop timing stability**  
+Description: The system shall configure the system clock and timers such that the control loop period is 1 ms ±1%.  
+Priority: High  
+Traceability: SYS-REQ-048  
+
+**SW-REQ-078 — Control loop period**  
+Description: The system shall execute the control loop at a fixed period of 1.0 ms or less (≥ 1 kHz).  
+Priority: High  
+Traceability: SYS-REQ-054  
+
+**SW-REQ-080 — Anti-oscillation hysteresis**  
+Description: The system shall apply a configurable hysteresis band around stop thresholds to prevent rapid toggling of actuator commands.  
+Priority: Medium  
+Traceability: SYS-REQ-056  
+
+**SW-REQ-085 — UART transmit interval**  
+Description: The system shall transmit UART messages at a periodic interval less than or equal to 100 ms during normal operation.  
+Priority: High  
+Traceability: SYS-REQ-061  
+
+---
+
+### 4.3 Interface Requirements
+**SW-REQ-003 — UART command interface**  
+Description: The system shall accept control commands over UART to set target actuator position and control mode.  
+Priority: High  
+Traceability: SYS-REQ-002  
+
+**SW-REQ-004 — UART diagnostics reporting**  
+Description: The system shall provide diagnostic messages over UART including current ADC value, target position, control output, and fault status on request.  
+Priority: Medium  
+Traceability: SYS-REQ-002  
+
+**SW-REQ-005 — UART protocol settings**  
+Description: The system shall support UART communication at 115200 baud, 8 data bits, no parity, and 1 stop bit.  
+Priority: Medium  
+Traceability: SYS-REQ-002  
+
+**SW-REQ-019 — UART ON command handling**  
+Description: The system shall accept a UART command to enable actuator drive and transition to an ON state within 50 ms of command receipt.  
+Priority: High  
+Traceability: SYS-REQ-012  
+
+**SW-REQ-020 — UART OFF command handling**  
+Description: The system shall accept a UART command to disable actuator drive and transition to an OFF state within 50 ms of command receipt.  
+Priority: High  
+Traceability: SYS-REQ-012  
+
+**SW-REQ-021 — UART command acknowledgement**  
+Description: The system shall transmit a UART acknowledgement message for each valid ON or OFF command within 20 ms of processing the command.  
+Priority: Medium  
+Traceability: SYS-REQ-012  
+
+**SW-REQ-035 — Configure supply voltage ADC channel**  
+Description: The system shall configure a dedicated ADC channel to sample the external supply voltage through a resistive divider network.  
+Priority: High  
+Traceability: SYS-REQ-024  
+
+**SW-REQ-043 — Overvoltage UART fault message**  
+Description: The system shall transmit the UART diagnostic message "OVERVOLTAGE_FAULT_ACTIVE" within 100 ms when the measured supply voltage is ≥ Overvoltage_Threshold.  
+Priority: High  
+Traceability: SYS-REQ-031  
+
+**SW-REQ-047 — UART actuator control interface**  
+Description: The system shall accept actuator control commands over the UART interface when the UART link is active.  
+Priority: High  
+Traceability: SYS-REQ-034  
+
+**SW-REQ-048 — Support ACTUATOR_ON command**  
+Description: The system shall recognize the UART command "ACTUATOR_ON" as a valid command.  
+Priority: High  
+Traceability: SYS-REQ-035  
+
+**SW-REQ-049 — Support ACTUATOR_OFF command**  
+Description: The system shall recognize the UART command "ACTUATOR_OFF" as a valid command.  
+Priority: High  
+Traceability: SYS-REQ-035  
+
+**SW-REQ-062 — ADC pin initialization**  
+Description: The system shall initialize the ADC input on pin PA1 for sensor acquisition.  
+Priority: High  
+Traceability: SYS-REQ-047  
+
+**SW-REQ-063 — Actuator GPIO initialization**  
+Description: The system shall configure pin PA5 as a GPIO output for actuator control.  
+Priority: High  
+Traceability: SYS-REQ-047  
+
+**SW-REQ-065 — UART initialization**  
+Description: The system shall initialize at least one UART peripheral for external communication.  
+Priority: Medium  
+Traceability: SYS-REQ-047  
+
+**SW-REQ-082 — Periodic UART status message**  
+Description: The system shall transmit a UART message at a configurable periodic interval containing raw ADC value, system state, shipping lock status, and fault flags.  
+Priority: Medium  
+Traceability: SYS-REQ-058  
+
+**SW-REQ-083 — UART baud rate configuration**  
+Description: The system shall configure the UART interface to 115200 baud.  
+Priority: High  
+Traceability: SYS-REQ-059  
+
+**SW-REQ-084 — UART frame format configuration**  
+Description: The system shall configure the UART interface to 8 data bits, no parity, and 1 stop bit (8N1).  
+Priority: High  
+Traceability: SYS-REQ-060  
+
+**SW-REQ-099 — UART ON/OFF control**  
+Description: The system shall accept UART commands to turn the actuator ON and OFF and shall update the actuator enable state accordingly.  
+Priority: High  
+Traceability: SYS-REQ-070  
+
+**SW-REQ-104 — State transition verification output**  
+Description: The system shall provide a software-accessible status indicator that reflects the current system state and last transition cause.  
+Priority: Medium  
+Traceability: SYS-REQ-071  
+
+---
+
+### 4.4 Reliability Requirements
+**SW-REQ-007 — Transient immunity robustness**  
+Description: The system shall implement input validation and fault state handling for ADC and UART data to support ISO 7637 transient immunity testing.  
+Priority: Medium  
+Traceability: SYS-REQ-004  
+
+**SW-REQ-008 — EMC immunity robustness**  
+Description: The system shall detect and reject out-of-range ADC readings outside the calibrated potentiometer limits and enter a safe state.  
+Priority: High  
+Traceability: SYS-REQ-005  
+
+**SW-REQ-016 — Safe state on feedback fault**  
+Description: The system shall disable actuator drive and report a fault if the feedback ADC value is invalid for more than 50 ms.  
+Priority: High  
+Traceability: SYS-REQ-010  
+
+**SW-REQ-056 — Safe outputs on startup**  
+Description: The system shall keep all actuator control outputs (PA5 GPIO and PWM outputs) disabled or in a high-impedance state until initialization completes and a 100 ms power stabilization delay has elapsed after reset.  
+Priority: High  
+Traceability: SYS-REQ-041  
+
+**SW-REQ-057 — Startup delay for transient suppression**  
+Description: The system shall delay enabling the control loop and actuator outputs for at least 50 ms after reset to avoid reacting to power-supply transients.  
+Priority: Medium  
+Traceability: SYS-REQ-042  
+
+**SW-REQ-061 — ADC overvoltage detection**  
+Description: The system shall detect ADC input saturation by identifying 5 consecutive samples at the maximum ADC count and shall transition to the FAULT state when saturation is detected.  
+Priority: High  
+Traceability: SYS-REQ-046  
+
+**SW-REQ-067 — Independent watchdog service**  
+Description: The system shall enable the independent watchdog and refresh it at least once within 50% of the watchdog timeout period during normal operation.  
+Priority: High  
+Traceability: SYS-REQ-047  
+
+**SW-REQ-073 — Fault state transitions**  
+Description: The system shall transition to the FAULT state from any state when a fault condition is detected and shall remain in FAULT until a reset occurs.  
+Priority: High  
+Traceability: SYS-REQ-050  
+
+**SW-REQ-074 — Watchdog initialization**  
+Description: The system shall initialize an independent hardware watchdog timer during startup and configure it with the platform’s supported timeout value.  
+Priority: High  
+Traceability: SYS-REQ-051  
+
+**SW-REQ-075 — Watchdog service interval**  
+Description: The system shall service the independent watchdog at least once within each watchdog timeout period during normal operation.  
+Priority: High  
+Traceability: SYS-REQ-051  
+
+**SW-REQ-076 — Reset on detected malfunction**  
+Description: The system shall intentionally stop servicing the watchdog to trigger a reset when a fatal software malfunction is detected.  
+Priority: High  
+Traceability: SYS-REQ-052  
+
+**SW-REQ-091 — Watchdog supervision**  
+Description: The system shall enable the hardware watchdog, service it periodically during normal execution, and on watchdog timeout shall reset the system and record a watchdog fault indication.  
+Priority: High  
+Traceability: SYS-REQ-062  
+
+---
+
+### 4.5 Maintainability Requirements
+**SW-REQ-009 — MISRA-C compliance**  
+Description: The system shall be implemented in C and adhere to MISRA-C:2012 guidelines with documented deviations.  
+Priority: Medium  
+Traceability: SYS-REQ-006  
+
+**SW-REQ-038 — Configurable overvoltage threshold parameter**  
+Description: The system shall store an Overvoltage_Threshold parameter in non-volatile memory and make it available to the voltage monitoring logic on startup.  
+Priority: Medium  
+Traceability: SYS-REQ-027  
+
+**SW-REQ-069 — Layered architecture enforcement**  
+Description: The system shall structure software into HAL, Driver, Middleware, and Application layers, and shall prevent direct hardware access from the Application layer by requiring all hardware interactions to pass through lower layers.  
+Priority: Medium  
+Traceability: SYS-REQ-049  
+
+---
+
+### 4.6 Constraint Requirements
+**SW-REQ-006 — Environmental condition handling**  
+Description: The system shall provide software configuration options to adjust ADC sampling rate, control gains, and UART timeouts to support ISO 16750 environmental conditions testing.  
+Priority: Low  
+Traceability: SYS-REQ-003  
+
+**SW-REQ-010 — 12V supply assumption**  
+Description: The system shall assume a 12V actuator supply and use this assumption for scaling any control output duty cycle or drive limits.  
+Priority: Medium  
+Traceability: SYS-REQ-007  
+
+**SW-REQ-027 — Flap actuation range enforcement**  
+Description: The system shall permit flap actuation only when the ADC feedback value is within 500 to 2600 counts, and shall stop actuation when the value is outside this range.  
+Priority: High  
+Traceability: SYS-REQ-018  
+
+**SW-REQ-029 — Prohibit open-loop control**  
+Description: The system shall inhibit actuator drive if valid ADC feedback is unavailable, thereby preventing open-loop control under any operating condition.  
+Priority: High  
+Traceability: SYS-REQ-020  
+
+**SW-REQ-031 — Permit motion only in ADC window**  
+Description: The system shall permit actuator drive commands only when the measured flap position ADC value is within 500 to 2600 inclusive.  
+Priority: High  
+Traceability: SYS-REQ-021  
+
+**SW-REQ-032 — Reject out-of-window targets**  
+Description: The system shall reject any configured target ADC value that is outside the range 500 to 2600 inclusive.  
+Priority: High  
+Traceability: SYS-REQ-021  
+
+**SW-REQ-054 — Nominal voltage configuration**  
+Description: The system shall store the nominal supply voltage value as 12 V for use in diagnostics and reporting.  
+Priority: Low  
+Traceability: SYS-REQ-039  
+
+**SW-REQ-055 — Operating voltage range configuration**  
+Description: The system shall configure the acceptable supply voltage limits to 9 V minimum and 16 V maximum for operating range checks.  
+Priority: High  
+Traceability: SYS-REQ-040  
+
+**SW-REQ-058 — ADC resolution configuration**  
+Description: The system shall configure the ADC to operate at 12-bit resolution.  
+Priority: High  
+Traceability: SYS-REQ-043  
+
+**SW-REQ-059 — ADC reference voltage configuration**  
+Description: The system shall configure the ADC reference voltage to 3.3 V.  
+Priority: High  
+Traceability: SYS-REQ-044  
+
+**SW-REQ-060 — ADC sampling frequency**  
+Description: The system shall sample the ADC channel at a rate of at least 1 kHz.  
+Priority: High  
+Traceability: SYS-REQ-045  
+
+**SW-REQ-081 — Raw ADC usage only**  
+Description: The system shall not perform any conversion of ADC values into physical position or angle units for control or decision logic.  
+Priority: High  
+Traceability: SYS-REQ-057  
+
+**SW-REQ-093 — Operating temperature range handling**  
+Description: The system shall correctly process temperature sensor inputs across the range of -40°C to +85°C without overflow or loss of resolution.  
+Priority: Medium  
+Traceability: SYS-REQ-064  
+
+**SW-REQ-094 — Storage temperature range handling**  
+Description: The system shall preserve configuration and calibration data in non-volatile memory without software-enforced invalidation when the device experiences storage temperatures from -40°C to +105°C.  
+Priority: Medium  
+Traceability: SYS-REQ-065  
+
+**SW-REQ-095 — Humidity constraint compliance**  
+Description: The system shall not depend on humidity measurements for operation and shall not execute any condensation-detection logic, assuming a non-condensing environment up to 95% RH.  
+Priority: Low  
+Traceability: SYS-REQ-066  
+
+**SW-REQ-105 — Architecture diagram artifact generation**  
+Description: The system shall generate an exportable system architecture diagram file in PDF format from the project documentation repository.  
+Priority: Low  
+Traceability: SYS-REQ-072  
+
+**SW-REQ-106 — Schematic artifact generation**  
+Description: The system shall include a software-controlled export of the schematic in PDF format as part of the release package.  
+Priority: Low  
+Traceability: SYS-REQ-073  
+
+**SW-REQ-107 — PCB layout artifact generation**  
+Description: The system shall include a software-controlled export of PCB layout files in Gerber format within the release package.  
+Priority: Low  
+Traceability: SYS-REQ-074  
+
+**SW-REQ-108 — Firmware source code packaging**  
+Description: The system shall provide the complete firmware source code in a version-controlled repository and include a tagged release for delivery.  
+Priority: High  
+Traceability: SYS-REQ-075  
+
+**SW-REQ-109 — Calibration procedure documentation**  
+Description: The system shall include a software-accessible calibration procedure document in PDF format within the release package.  
+Priority: Medium  
+Traceability: SYS-REQ-076  
+
+**SW-REQ-110 — Test report generation**  
+Description: The system shall generate a test report in PDF format summarizing test cases, results, and pass/fail status for each build.  
+Priority: Medium  
+Traceability: SYS-REQ-077  
+
+**SW-REQ-111 — Demonstration video packaging**  
+Description: The system shall include a demonstration video file in MP4 format within the release package.  
+Priority: Low  
+Traceability: SYS-REQ-078  
+
+---
+
+## 5. Summary Table
+
+| ID | Title | Category | Priority | Parent SYS-REQ |
+|---|---|---|---|---|
+| SW-REQ-001 | Closed-loop control algorithm | Functional | High | SYS-REQ-001 |
+| SW-REQ-002 | ADC sampling for feedback | Performance | Medium | SYS-REQ-001 |
+| SW-REQ-003 | UART command interface | Interface | High | SYS-REQ-002 |
+| SW-REQ-004 | UART diagnostics reporting | Interface | Medium | SYS-REQ-002 |
+| SW-REQ-005 | UART protocol settings | Interface | Medium | SYS-REQ-002 |
+| SW-REQ-006 | Environmental condition handling | Constraint | Low | SYS-REQ-003 |
+| SW-REQ-007 | Transient immunity robustness | Reliability | Medium | SYS-REQ-004 |
+| SW-REQ-008 | EMC immunity robustness | Reliability | High | SYS-REQ-005 |
+| SW-REQ-009 | MISRA-C compliance | Maintainability | Medium | SYS-REQ-006 |
+| SW-REQ-010 | 12V supply assumption | Constraint | Medium | SYS-REQ-007 |
+| SW-REQ-011 | Potentiometer feedback configuration | Functional | High | SYS-REQ-008 |
+| SW-REQ-012 | ADC read function | Functional | High | SYS-REQ-009 |
+| SW-REQ-013 | ADC scaling to position | Functional | Medium | SYS-REQ-009 |
+| SW-REQ-014 | Actuator control output | Functional | High | SYS-REQ-010 |
+| SW-REQ-015 | Control loop timing | Performance | Medium | SYS-REQ-010 |
+| SW-REQ-016 | Safe state on feedback fault | Reliability | High | SYS-REQ-010 |
+| SW-REQ-017 | Shipping position threshold configuration | Functional | High | SYS-REQ-011 |
+| SW-REQ-018 | Stop at shipping position | Functional | High | SYS-REQ-011 |
+| SW-REQ-019 | UART ON command handling | Interface | High | SYS-REQ-012 |
+| SW-REQ-020 | UART OFF command handling | Interface | High | SYS-REQ-012 |
+| SW-REQ-021 | UART command acknowledgement | Interface | Medium | SYS-REQ-012 |
+| SW-REQ-022 | Continuous ADC acquisition loop | Functional | High | SYS-REQ-013 |
+| SW-REQ-023 | ADC resolution configuration | Performance | High | SYS-REQ-014 |
+| SW-REQ-024 | ADC sampling rate | Performance | High | SYS-REQ-015 |
+| SW-REQ-025 | ADC as primary feedback variable | Functional | High | SYS-REQ-016 |
+| SW-REQ-026 | ADC-only flap control inputs | Functional | High | SYS-REQ-017 |
+| SW-REQ-027 | Flap actuation range enforcement | Constraint | High | SYS-REQ-018 |
+| SW-REQ-028 | Control decisions based on real-time ADC | Functional | High | SYS-REQ-019 |
+| SW-REQ-029 | Prohibit open-loop control | Constraint | High | SYS-REQ-020 |
+| SW-REQ-030 | ADC validity monitoring | Functional | High | SYS-REQ-020 |
+| SW-REQ-031 | Permit motion only in ADC window | Constraint | High | SYS-REQ-021 |
+| SW-REQ-032 | Reject out-of-window targets | Constraint | High | SYS-REQ-021 |
+| SW-REQ-033 | Disable drive on ADC out of range | Functional | High | SYS-REQ-022 |
+| SW-REQ-034 | Stop at target ADC | Functional | High | SYS-REQ-023 |
+| SW-REQ-035 | Configure supply voltage ADC channel | Interface | High | SYS-REQ-024 |
+| SW-REQ-036 | Compute scaled supply voltage | Functional | High | SYS-REQ-025 |
+| SW-REQ-037 | Continuous supply monitoring | Performance | High | SYS-REQ-026 |
+| SW-REQ-038 | Configurable overvoltage threshold parameter | Maintainability | Medium | SYS-REQ-027 |
+| SW-REQ-039 | Overvoltage detection | Functional | High | SYS-REQ-027 |
+| SW-REQ-040 | Disable drive on overvoltage | Functional | High | SYS-REQ-028 |
+| SW-REQ-041 | Block actuator commands during overvoltage | Functional | High | SYS-REQ-029 |
+| SW-REQ-042 | Enter fault state on overvoltage | Functional | High | SYS-REQ-030 |
+| SW-REQ-043 | Overvoltage UART fault message | Interface | High | SYS-REQ-031 |
+| SW-REQ-044 | Maintain FAULT state until clear conditions | Functional | High | SYS-REQ-032 |
+| SW-REQ-045 | FAULT exit voltage check | Performance | Medium | SYS-REQ-032 |
+| SW-REQ-046 | Continuous overvoltage monitoring | Functional | High | SYS-REQ-033 |
+| SW-REQ-047 | UART actuator control interface | Interface | High | SYS-REQ-034 |
+| SW-REQ-048 | Support ACTUATOR_ON command | Interface | High | SYS-REQ-035 |
+| SW-REQ-049 | Support ACTUATOR_OFF command | Interface | High | SYS-REQ-035 |
+| SW-REQ-050 | ACTUATOR_ON execution | Functional | High | SYS-REQ-036 |
+| SW-REQ-051 | ACTUATOR_OFF execution | Functional | High | SYS-REQ-037 |
+| SW-REQ-052 | Ignore invalid UART commands | Functional | Medium | SYS-REQ-038 |
+| SW-REQ-053 | Log invalid UART commands | Functional | Medium | SYS-REQ-038 |
+| SW-REQ-054 | Nominal voltage configuration | Constraint | Low | SYS-REQ-039 |
+| SW-REQ-055 | Operating voltage range configuration | Constraint | High | SYS-REQ-040 |
+| SW-REQ-056 | Safe outputs on startup | Reliability | High | SYS-REQ-041 |
+| SW-REQ-057 | Startup delay for transient suppression | Reliability | Medium | SYS-REQ-042 |
+| SW-REQ-058 | ADC resolution configuration | Functional | High | SYS-REQ-043 |
+| SW-REQ-059 | ADC reference voltage configuration | Constraint | High | SYS-REQ-044 |
+| SW-REQ-060 | ADC sampling frequency | Performance | High | SYS-REQ-045 |
+| SW-REQ-061 | ADC overvoltage detection | Reliability | High | SYS-REQ-046 |
+| SW-REQ-062 | ADC pin initialization | Interface | High | SYS-REQ-047 |
+| SW-REQ-063 | Actuator GPIO initialization | Interface | High | SYS-REQ-047 |
+| SW-REQ-064 | PWM timer initialization | Functional | High | SYS-REQ-047 |
+| SW-REQ-065 | UART initialization | Interface | Medium | SYS-REQ-047 |
+| SW-REQ-066 | DMA usage for data transfer | Performance | Medium | SYS-REQ-047 |
+| SW-REQ-067 | Independent watchdog service | Reliability | High | SYS-REQ-047 |
+| SW-REQ-068 | Control loop timing stability | Performance | High | SYS-REQ-048 |
+| SW-REQ-069 | Layered architecture enforcement | Maintainability | Medium | SYS-REQ-049 |
+| SW-REQ-070 | State machine implementation | Functional | High | SYS-REQ-050 |
+| SW-REQ-071 | Initial state on reset | Functional | High | SYS-REQ-050 |
+| SW-REQ-072 | Nominal state transitions | Functional | Medium | SYS-REQ-050 |
+| SW-REQ-073 | Fault state transitions | Reliability | High | SYS-REQ-050 |
+| SW-REQ-074 | Watchdog initialization | Reliability | High | SYS-REQ-051 |
+| SW-REQ-075 | Watchdog service interval | Reliability | High | SYS-REQ-051 |
+| SW-REQ-076 | Reset on detected malfunction | Reliability | High | SYS-REQ-052 |
+| SW-REQ-077 | ADC-only feedback for control | Functional | High | SYS-REQ-053 |
+| SW-REQ-078 | Control loop period | Performance | High | SYS-REQ-054 |
+| SW-REQ-079 | Threshold-based actuator stop | Functional | High | SYS-REQ-055 |
+| SW-REQ-080 | Anti-oscillation hysteresis | Performance | Medium | SYS-REQ-056 |
+| SW-REQ-081 | Raw ADC usage only | Constraint | High | SYS-REQ-057 |
+| SW-REQ-082 | Periodic UART status message | Interface | Medium | SYS-REQ-058 |
+| SW-REQ-083 | UART baud rate configuration | Interface | High | SYS-REQ-059 |
+| SW-REQ-084 | UART frame format configuration | Interface | High | SYS-REQ-060 |
+| SW-REQ-085 | UART transmit interval | Performance | High | SYS-REQ-061 |
+| SW-REQ-086 | Overcurrent shutdown | Functional | High | SYS-REQ-062 |
+| SW-REQ-087 | Thermal shutdown | Functional | High | SYS-REQ-062 |
+| SW-REQ-088 | Stall detection | Functional | High | SYS-REQ-062 |
+| SW-REQ-089 | Short-circuit protection | Functional | High | SYS-REQ-062 |
+| SW-REQ-090 | Undervoltage detection | Functional | High | SYS-REQ-062 |
+| SW-REQ-091 | Watchdog supervision | Reliability | High | SYS-REQ-062 |
+| SW-REQ-092 | Fault state transition | Functional | High | SYS-REQ-063 |
+| SW-REQ-093 | Operating temperature range handling | Constraint | Medium | SYS-REQ-064 |
+| SW-REQ-094 | Storage temperature range handling | Constraint | Medium | SYS-REQ-065 |
+| SW-REQ-095 | Humidity constraint compliance | Constraint | Low | SYS-REQ-066 |
+| SW-REQ-096 | Continuous ADC acquisition | Functional | High | SYS-REQ-067 |
+| SW-REQ-097 | ADC feedback control | Functional | High | SYS-REQ-068 |
+| SW-REQ-098 | Hard stop at Shipping_ADC_Value | Functional | High | SYS-REQ-069 |
+| SW-REQ-099 | UART ON/OFF control | Interface | High | SYS-REQ-070 |
+| SW-REQ-100 | Fault condition detection | Functional | High | SYS-REQ-071 |
+| SW-REQ-101 | Fault reporting | Functional | High | SYS-REQ-071 |
+| SW-REQ-102 | State transition on fault | Functional | High | SYS-REQ-071 |
+| SW-REQ-103 | State transition recovery | Functional | Medium | SYS-REQ-071 |
+| SW-REQ-104 | State transition verification output | Interface | Medium | SYS-REQ-071 |
+| SW-REQ-105 | Architecture diagram artifact generation | Constraint | Low | SYS-REQ-072 |
+| SW-REQ-106 | Schematic artifact generation | Constraint | Low | SYS-REQ-073 |
+| SW-REQ-107 | PCB layout artifact generation | Constraint | Low | SYS-REQ-074 |
+| SW-REQ-108 | Firmware source code packaging | Constraint | High | SYS-REQ-075 |
+| SW-REQ-109 | Calibration procedure documentation | Constraint | Medium | SYS-REQ-076 |
+| SW-REQ-110 | Test report generation | Constraint | Medium | SYS-REQ-077 |
+| SW-REQ-111 | Demonstration video packaging | Constraint | Low | SYS-REQ-078 |
+
+---
+
+**End of SRS**

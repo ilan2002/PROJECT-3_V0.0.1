@@ -1,0 +1,890 @@
+[
+    {
+        "id": "SW-REQ-001",
+        "title": "Closed-loop control algorithm",
+        "description": "The system shall implement a closed-loop control algorithm that uses the potentiometer feedback ADC value to compute actuator drive commands.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-001"
+    },
+    {
+        "id": "SW-REQ-002",
+        "title": "ADC sampling for feedback",
+        "description": "The system shall sample the feedback ADC channel at a configurable rate between 100 Hz and 1 kHz with a default of 500 Hz.",
+        "category": "Performance",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-001"
+    },
+    {
+        "id": "SW-REQ-003",
+        "title": "UART command interface",
+        "description": "The system shall accept control commands over UART to set target actuator position and control mode.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-002"
+    },
+    {
+        "id": "SW-REQ-004",
+        "title": "UART diagnostics reporting",
+        "description": "The system shall provide diagnostic messages over UART including current ADC value, target position, control output, and fault status on request.",
+        "category": "Interface",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-002"
+    },
+    {
+        "id": "SW-REQ-005",
+        "title": "UART protocol settings",
+        "description": "The system shall support UART communication at 115200 baud, 8 data bits, no parity, and 1 stop bit.",
+        "category": "Interface",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-002"
+    },
+    {
+        "id": "SW-REQ-006",
+        "title": "Environmental condition handling",
+        "description": "The system shall provide software configuration options to adjust ADC sampling rate, control gains, and UART timeouts to support ISO 16750 environmental conditions testing.",
+        "category": "Constraint",
+        "priority": "Low",
+        "parent_sys_req": "SYS-REQ-003"
+    },
+    {
+        "id": "SW-REQ-007",
+        "title": "Transient immunity robustness",
+        "description": "The system shall implement input validation and fault state handling for ADC and UART data to support ISO 7637 transient immunity testing.",
+        "category": "Reliability",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-004"
+    },
+    {
+        "id": "SW-REQ-008",
+        "title": "EMC immunity robustness",
+        "description": "The system shall detect and reject out-of-range ADC readings outside the calibrated potentiometer limits and enter a safe state.",
+        "category": "Reliability",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-005"
+    },
+    {
+        "id": "SW-REQ-009",
+        "title": "MISRA-C compliance",
+        "description": "The system shall be implemented in C and adhere to MISRA-C:2012 guidelines with documented deviations.",
+        "category": "Maintainability",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-006"
+    },
+    {
+        "id": "SW-REQ-010",
+        "title": "12V supply assumption",
+        "description": "The system shall assume a 12V actuator supply and use this assumption for scaling any control output duty cycle or drive limits.",
+        "category": "Constraint",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-007"
+    },
+    {
+        "id": "SW-REQ-011",
+        "title": "Potentiometer feedback configuration",
+        "description": "The system shall configure a single analog input channel for the actuator potentiometer feedback.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-008"
+    },
+    {
+        "id": "SW-REQ-012",
+        "title": "ADC read function",
+        "description": "The system shall read the actuator feedback potentiometer via the ADC and provide the raw and scaled values to the control algorithm.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-009"
+    },
+    {
+        "id": "SW-REQ-013",
+        "title": "ADC scaling to position",
+        "description": "The system shall scale the ADC reading to a normalized position value in the range 0.0 to 1.0 using configurable minimum and maximum calibration values.",
+        "category": "Functional",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-009"
+    },
+    {
+        "id": "SW-REQ-014",
+        "title": "Actuator control output",
+        "description": "The system shall compute and update actuator control output based on the measured ADC position and the commanded target position at each control cycle.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-010"
+    },
+    {
+        "id": "SW-REQ-015",
+        "title": "Control loop timing",
+        "description": "The system shall execute the control loop at a fixed period of 10 ms \u00b11 ms.",
+        "category": "Performance",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-010"
+    },
+    {
+        "id": "SW-REQ-016",
+        "title": "Safe state on feedback fault",
+        "description": "The system shall disable actuator drive and report a fault if the feedback ADC value is invalid for more than 50 ms.",
+        "category": "Reliability",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-010"
+    },
+    {
+        "id": "SW-REQ-017",
+        "title": "Shipping position threshold configuration",
+        "description": "The system shall store a configurable ADC threshold value representing the shipping position in non-volatile memory and use it for control decisions.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-011"
+    },
+    {
+        "id": "SW-REQ-018",
+        "title": "Stop at shipping position",
+        "description": "The system shall stop actuator drive within 20 ms after the ADC feedback value crosses the configured shipping position threshold.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-011"
+    },
+    {
+        "id": "SW-REQ-019",
+        "title": "UART ON command handling",
+        "description": "The system shall accept a UART command to enable actuator drive and transition to an ON state within 50 ms of command receipt.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-012"
+    },
+    {
+        "id": "SW-REQ-020",
+        "title": "UART OFF command handling",
+        "description": "The system shall accept a UART command to disable actuator drive and transition to an OFF state within 50 ms of command receipt.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-012"
+    },
+    {
+        "id": "SW-REQ-021",
+        "title": "UART command acknowledgement",
+        "description": "The system shall transmit a UART acknowledgement message for each valid ON or OFF command within 20 ms of processing the command.",
+        "category": "Interface",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-012"
+    },
+    {
+        "id": "SW-REQ-022",
+        "title": "Continuous ADC acquisition loop",
+        "description": "The system shall continuously sample the actuator potentiometer using the internal ADC without gaps longer than 2 ms during normal operation.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-013"
+    },
+    {
+        "id": "SW-REQ-023",
+        "title": "ADC resolution configuration",
+        "description": "The system shall configure the internal ADC to operate at 12-bit resolution or higher.",
+        "category": "Performance",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-014"
+    },
+    {
+        "id": "SW-REQ-024",
+        "title": "ADC sampling rate",
+        "description": "The system shall sample the internal ADC at a rate of at least 1000 samples per second.",
+        "category": "Performance",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-015"
+    },
+    {
+        "id": "SW-REQ-025",
+        "title": "ADC as primary feedback variable",
+        "description": "The system shall use the latest ADC sample as the primary feedback variable for all actuator control computations.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-016"
+    },
+    {
+        "id": "SW-REQ-026",
+        "title": "ADC-only flap control inputs",
+        "description": "The system shall compute flap actuation commands using only the measured ADC feedback value and configured thresholds, with no other sensor inputs.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-017"
+    },
+    {
+        "id": "SW-REQ-027",
+        "title": "Flap actuation range enforcement",
+        "description": "The system shall permit flap actuation only when the ADC feedback value is within 500 to 2600 counts, and shall stop actuation when the value is outside this range.",
+        "category": "Constraint",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-018"
+    },
+    {
+        "id": "SW-REQ-028",
+        "title": "Control decisions based on real-time ADC",
+        "description": "The system shall base each control decision on the most recent ADC sample that is no older than 2 ms.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-019"
+    },
+    {
+        "id": "SW-REQ-029",
+        "title": "Prohibit open-loop control",
+        "description": "The system shall inhibit actuator drive if valid ADC feedback is unavailable, thereby preventing open-loop control under any operating condition.",
+        "category": "Constraint",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-020"
+    },
+    {
+        "id": "SW-REQ-030",
+        "title": "ADC validity monitoring",
+        "description": "The system shall flag ADC feedback as invalid if no new sample is acquired within 2 ms or if the ADC value is out of the 0 to 4095 range.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-020"
+    },
+    {
+        "id": "SW-REQ-031",
+        "title": "Permit motion only in ADC window",
+        "description": "The system shall permit actuator drive commands only when the measured flap position ADC value is within 500 to 2600 inclusive.",
+        "category": "Constraint",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-021"
+    },
+    {
+        "id": "SW-REQ-032",
+        "title": "Reject out-of-window targets",
+        "description": "The system shall reject any configured target ADC value that is outside the range 500 to 2600 inclusive.",
+        "category": "Constraint",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-021"
+    },
+    {
+        "id": "SW-REQ-033",
+        "title": "Disable drive on ADC out of range",
+        "description": "The system shall disable the actuator drive output within one control loop cycle when the measured ADC value is less than 500 or greater than 2600.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-022"
+    },
+    {
+        "id": "SW-REQ-034",
+        "title": "Stop at target ADC",
+        "description": "The system shall stop actuator movement when the measured ADC value is within \u00b11 count of the configured target ADC value.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-023"
+    },
+    {
+        "id": "SW-REQ-035",
+        "title": "Configure supply voltage ADC channel",
+        "description": "The system shall configure a dedicated ADC channel to sample the external supply voltage through a resistive divider network.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-024"
+    },
+    {
+        "id": "SW-REQ-036",
+        "title": "Compute scaled supply voltage",
+        "description": "The system shall compute the external supply voltage by applying the configured divider ratio to the measured ADC value.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-025"
+    },
+    {
+        "id": "SW-REQ-037",
+        "title": "Continuous supply monitoring",
+        "description": "The system shall sample and update the computed supply voltage at least once per control loop cycle.",
+        "category": "Performance",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-026"
+    },
+    {
+        "id": "SW-REQ-038",
+        "title": "Configurable overvoltage threshold parameter",
+        "description": "The system shall store an Overvoltage_Threshold parameter in non-volatile memory and make it available to the voltage monitoring logic on startup.",
+        "category": "Maintainability",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-027"
+    },
+    {
+        "id": "SW-REQ-039",
+        "title": "Overvoltage detection",
+        "description": "The system shall declare an overvoltage condition when the computed supply voltage is greater than or equal to Overvoltage_Threshold.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-027"
+    },
+    {
+        "id": "SW-REQ-040",
+        "title": "Disable drive on overvoltage",
+        "description": "The system shall disable the actuator drive output within one control loop cycle of detecting an overvoltage condition.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-028"
+    },
+    {
+        "id": "SW-REQ-041",
+        "title": "Block actuator commands during overvoltage",
+        "description": "The system shall ignore or reject all actuator movement commands while an overvoltage condition is present.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-029"
+    },
+    {
+        "id": "SW-REQ-042",
+        "title": "Enter fault state on overvoltage",
+        "description": "The system shall transition to the FAULT state within one control loop cycle of detecting an overvoltage condition.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-030"
+    },
+    {
+        "id": "SW-REQ-043",
+        "title": "Overvoltage UART fault message",
+        "description": "The system shall transmit the UART diagnostic message \"OVERVOLTAGE_FAULT_ACTIVE\" within 100 ms when the measured supply voltage is greater than or equal to the configured Overvoltage_Threshold.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-031"
+    },
+    {
+        "id": "SW-REQ-044",
+        "title": "Maintain FAULT state until clear conditions",
+        "description": "The system shall remain in FAULT state until both conditions are true: (1) the measured supply voltage is within the acceptable limits, and (2) a system reset or an authorized UART command to clear fault is received.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-032"
+    },
+    {
+        "id": "SW-REQ-045",
+        "title": "FAULT exit voltage check",
+        "description": "The system shall evaluate the supply voltage for FAULT exit using the configured acceptable limits at least once every 100 ms while in FAULT state.",
+        "category": "Performance",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-032"
+    },
+    {
+        "id": "SW-REQ-046",
+        "title": "Continuous overvoltage monitoring",
+        "description": "The system shall sample the supply voltage and evaluate overvoltage status at least once every 100 ms during all active system states.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-033"
+    },
+    {
+        "id": "SW-REQ-047",
+        "title": "UART actuator control interface",
+        "description": "The system shall accept actuator control commands over the UART interface when the UART link is active.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-034"
+    },
+    {
+        "id": "SW-REQ-048",
+        "title": "Support ACTUATOR_ON command",
+        "description": "The system shall recognize the UART command \"ACTUATOR_ON\" as a valid command.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-035"
+    },
+    {
+        "id": "SW-REQ-049",
+        "title": "Support ACTUATOR_OFF command",
+        "description": "The system shall recognize the UART command \"ACTUATOR_OFF\" as a valid command.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-035"
+    },
+    {
+        "id": "SW-REQ-050",
+        "title": "ACTUATOR_ON execution",
+        "description": "Upon receiving a valid \"ACTUATOR_ON\" command, the system shall initiate actuator operation according to the configured control logic within 100 ms.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-036"
+    },
+    {
+        "id": "SW-REQ-051",
+        "title": "ACTUATOR_OFF execution",
+        "description": "Upon receiving a valid \"ACTUATOR_OFF\" command, the system shall disable the actuator output within 50 ms.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-037"
+    },
+    {
+        "id": "SW-REQ-052",
+        "title": "Ignore invalid UART commands",
+        "description": "The system shall take no actuator state change when an invalid UART command is received.",
+        "category": "Functional",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-038"
+    },
+    {
+        "id": "SW-REQ-053",
+        "title": "Log invalid UART commands",
+        "description": "The system shall log each invalid UART command with a timestamp and the received raw command string.",
+        "category": "Functional",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-038"
+    },
+    {
+        "id": "SW-REQ-054",
+        "title": "Nominal voltage configuration",
+        "description": "The system shall store the nominal supply voltage value as 12 V for use in diagnostics and reporting.",
+        "category": "Constraint",
+        "priority": "Low",
+        "parent_sys_req": "SYS-REQ-039"
+    },
+    {
+        "id": "SW-REQ-055",
+        "title": "Operating voltage range configuration",
+        "description": "The system shall configure the acceptable supply voltage limits to 9 V minimum and 16 V maximum for operating range checks.",
+        "category": "Constraint",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-040"
+    },
+    {
+        "id": "SW-REQ-056",
+        "title": "Safe outputs on startup",
+        "description": "The system shall keep all actuator control outputs (PA5 GPIO and PWM outputs) disabled or in a high-impedance state until initialization completes and a 100 ms power stabilization delay has elapsed after reset.",
+        "category": "Reliability",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-041"
+    },
+    {
+        "id": "SW-REQ-057",
+        "title": "Startup delay for transient suppression",
+        "description": "The system shall delay enabling the control loop and actuator outputs for at least 50 ms after reset to avoid reacting to power-supply transients.",
+        "category": "Reliability",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-042"
+    },
+    {
+        "id": "SW-REQ-058",
+        "title": "ADC resolution configuration",
+        "description": "The system shall configure the ADC to operate at 12-bit resolution.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-043"
+    },
+    {
+        "id": "SW-REQ-059",
+        "title": "ADC reference voltage configuration",
+        "description": "The system shall configure the ADC reference voltage to 3.3 V.",
+        "category": "Constraint",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-044"
+    },
+    {
+        "id": "SW-REQ-060",
+        "title": "ADC sampling frequency",
+        "description": "The system shall sample the ADC channel at a rate of at least 1 kHz.",
+        "category": "Performance",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-045"
+    },
+    {
+        "id": "SW-REQ-061",
+        "title": "ADC overvoltage detection",
+        "description": "The system shall detect ADC input saturation by identifying 5 consecutive samples at the maximum ADC count and shall transition to the FAULT state when saturation is detected.",
+        "category": "Reliability",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-046"
+    },
+    {
+        "id": "SW-REQ-062",
+        "title": "ADC pin initialization",
+        "description": "The system shall initialize the ADC input on pin PA1 for sensor acquisition.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-047"
+    },
+    {
+        "id": "SW-REQ-063",
+        "title": "Actuator GPIO initialization",
+        "description": "The system shall configure pin PA5 as a GPIO output for actuator control.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-047"
+    },
+    {
+        "id": "SW-REQ-064",
+        "title": "PWM timer initialization",
+        "description": "The system shall initialize an advanced PWM timer to generate actuator control signals.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-047"
+    },
+    {
+        "id": "SW-REQ-065",
+        "title": "UART initialization",
+        "description": "The system shall initialize at least one UART peripheral for external communication.",
+        "category": "Interface",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-047"
+    },
+    {
+        "id": "SW-REQ-066",
+        "title": "DMA usage for data transfer",
+        "description": "The system shall configure DMA support for ADC data transfers to reduce CPU load during sampling.",
+        "category": "Performance",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-047"
+    },
+    {
+        "id": "SW-REQ-067",
+        "title": "Independent watchdog service",
+        "description": "The system shall enable the independent watchdog and refresh it at least once within 50% of the watchdog timeout period during normal operation.",
+        "category": "Reliability",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-047"
+    },
+    {
+        "id": "SW-REQ-068",
+        "title": "Control loop timing stability",
+        "description": "The system shall configure the system clock and timers such that the control loop period is 1 ms \u00b11%.",
+        "category": "Performance",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-048"
+    },
+    {
+        "id": "SW-REQ-069",
+        "title": "Layered architecture enforcement",
+        "description": "The system shall structure software into HAL, Driver, Middleware, and Application layers, and shall prevent direct hardware access from the Application layer by requiring all hardware interactions to pass through lower layers.",
+        "category": "Maintainability",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-049"
+    },
+    {
+        "id": "SW-REQ-070",
+        "title": "State machine implementation",
+        "description": "The system shall implement a state machine with the states INIT, IDLE, ACTIVE, SHIPPING_LOCK, and FAULT.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-050"
+    },
+    {
+        "id": "SW-REQ-071",
+        "title": "Initial state on reset",
+        "description": "The system shall enter the INIT state on every reset or power-up.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-050"
+    },
+    {
+        "id": "SW-REQ-072",
+        "title": "Nominal state transitions",
+        "description": "The system shall transition from INIT to IDLE after successful initialization, from IDLE to ACTIVE upon receiving an activate command, from ACTIVE to SHIPPING_LOCK upon receiving a shipping lock command, and from SHIPPING_LOCK to IDLE upon receiving an unlock command.",
+        "category": "Functional",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-050"
+    },
+    {
+        "id": "SW-REQ-073",
+        "title": "Fault state transitions",
+        "description": "The system shall transition to the FAULT state from any state when a fault condition is detected and shall remain in FAULT until a reset occurs.",
+        "category": "Reliability",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-050"
+    },
+    {
+        "id": "SW-REQ-074",
+        "title": "Watchdog initialization",
+        "description": "The system shall initialize an independent hardware watchdog timer during startup and configure it with the platform\u2019s supported timeout value.",
+        "category": "Reliability",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-051"
+    },
+    {
+        "id": "SW-REQ-075",
+        "title": "Watchdog service interval",
+        "description": "The system shall service the independent watchdog at least once within each watchdog timeout period during normal operation.",
+        "category": "Reliability",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-051"
+    },
+    {
+        "id": "SW-REQ-076",
+        "title": "Reset on detected malfunction",
+        "description": "The system shall intentionally stop servicing the watchdog to trigger a reset when a fatal software malfunction is detected.",
+        "category": "Reliability",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-052"
+    },
+    {
+        "id": "SW-REQ-077",
+        "title": "ADC-only feedback for control",
+        "description": "The system shall compute closed-loop control outputs using only raw ADC feedback values and internal control state, without using any other sensor inputs.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-053"
+    },
+    {
+        "id": "SW-REQ-078",
+        "title": "Control loop period",
+        "description": "The system shall execute the control loop at a fixed period of 1.0 ms or less (\u2265 1 kHz).",
+        "category": "Performance",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-054"
+    },
+    {
+        "id": "SW-REQ-079",
+        "title": "Threshold-based actuator stop",
+        "description": "The system shall command the actuator to stop within one control loop cycle when the ADC value is at or beyond the configured stop thresholds.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-055"
+    },
+    {
+        "id": "SW-REQ-080",
+        "title": "Anti-oscillation hysteresis",
+        "description": "The system shall apply a configurable hysteresis band around stop thresholds to prevent rapid toggling of actuator commands.",
+        "category": "Performance",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-056"
+    },
+    {
+        "id": "SW-REQ-081",
+        "title": "Raw ADC usage only",
+        "description": "The system shall not perform any conversion of ADC values into physical position or angle units for control or decision logic.",
+        "category": "Constraint",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-057"
+    },
+    {
+        "id": "SW-REQ-082",
+        "title": "Periodic UART status message",
+        "description": "The system shall transmit a UART message at a configurable periodic interval containing raw ADC value, system state, shipping lock status, and fault flags.",
+        "category": "Interface",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-058"
+    },
+    {
+        "id": "SW-REQ-083",
+        "title": "UART baud rate configuration",
+        "description": "The system shall configure the UART interface to 115200 baud.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-059"
+    },
+    {
+        "id": "SW-REQ-084",
+        "title": "UART frame format configuration",
+        "description": "The system shall configure the UART interface to 8 data bits, no parity, and 1 stop bit (8N1).",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-060"
+    },
+    {
+        "id": "SW-REQ-085",
+        "title": "UART transmit interval",
+        "description": "The system shall transmit UART messages at a periodic interval less than or equal to 100 ms during normal operation.",
+        "category": "Performance",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-061"
+    },
+    {
+        "id": "SW-REQ-086",
+        "title": "Overcurrent shutdown",
+        "description": "The system shall monitor motor current and, when the measured current exceeds a configurable overcurrent threshold, disable the actuator output and raise a fault.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-062"
+    },
+    {
+        "id": "SW-REQ-087",
+        "title": "Thermal shutdown",
+        "description": "The system shall monitor the MCU internal temperature sensor and, when the measured temperature exceeds a configurable thermal threshold, disable the actuator output and raise a fault.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-062"
+    },
+    {
+        "id": "SW-REQ-088",
+        "title": "Stall detection",
+        "description": "The system shall detect a stall condition when the actuator is commanded to move and the ADC feedback change remains below a configurable delta for a configurable duration, and shall raise a fault.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-062"
+    },
+    {
+        "id": "SW-REQ-089",
+        "title": "Short-circuit protection",
+        "description": "The system shall detect a short-circuit condition using available hardware indicators or current measurements and, upon detection, disable the actuator output and raise a fault.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-062"
+    },
+    {
+        "id": "SW-REQ-090",
+        "title": "Undervoltage detection",
+        "description": "The system shall monitor supply voltage and, when the measured voltage is below 9 V, disable the actuator output and raise a fault.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-062"
+    },
+    {
+        "id": "SW-REQ-091",
+        "title": "Watchdog supervision",
+        "description": "The system shall enable the hardware watchdog, service it periodically during normal execution, and on watchdog timeout shall reset the system and record a watchdog fault indication.",
+        "category": "Reliability",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-062"
+    },
+    {
+        "id": "SW-REQ-092",
+        "title": "Fault state transition",
+        "description": "The system shall transition the state machine to FAULT state in the same processing cycle in which any fault condition is detected.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-063"
+    },
+    {
+        "id": "SW-REQ-093",
+        "title": "Operating temperature range handling",
+        "description": "The system shall correctly process temperature sensor inputs across the range of -40\u00b0C to +85\u00b0C without overflow or loss of resolution.",
+        "category": "Constraint",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-064"
+    },
+    {
+        "id": "SW-REQ-094",
+        "title": "Storage temperature range handling",
+        "description": "The system shall preserve configuration and calibration data in non-volatile memory without software-enforced invalidation when the device experiences storage temperatures from -40\u00b0C to +105\u00b0C.",
+        "category": "Constraint",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-065"
+    },
+    {
+        "id": "SW-REQ-095",
+        "title": "Humidity constraint compliance",
+        "description": "The system shall not depend on humidity measurements for operation and shall not execute any condensation-detection logic, assuming a non-condensing environment up to 95% RH.",
+        "category": "Constraint",
+        "priority": "Low",
+        "parent_sys_req": "SYS-REQ-066"
+    },
+    {
+        "id": "SW-REQ-096",
+        "title": "Continuous ADC acquisition",
+        "description": "The system shall sample the ADC continuously during powered operation at a fixed periodic rate and make the latest sample available to the control loop each cycle.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-067"
+    },
+    {
+        "id": "SW-REQ-097",
+        "title": "ADC feedback control",
+        "description": "The system shall compute and update actuator commands using the most recent ADC feedback on each control loop iteration.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-068"
+    },
+    {
+        "id": "SW-REQ-098",
+        "title": "Hard stop at Shipping_ADC_Value",
+        "description": "The system shall stop actuator motion and prevent further motion toward the limit when the ADC feedback reaches the configured Shipping_ADC_Value threshold.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-069"
+    },
+    {
+        "id": "SW-REQ-099",
+        "title": "UART ON/OFF control",
+        "description": "The system shall accept UART commands to turn the actuator ON and OFF and shall update the actuator enable state accordingly.",
+        "category": "Interface",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-070"
+    },
+    {
+        "id": "SW-REQ-100",
+        "title": "Fault condition detection",
+        "description": "The system shall monitor all defined fault inputs and detect a fault within 100 ms of the fault condition becoming true.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-071"
+    },
+    {
+        "id": "SW-REQ-101",
+        "title": "Fault reporting",
+        "description": "The system shall log each detected fault with a timestamp and fault code to non-volatile storage within 1 s of detection.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-071"
+    },
+    {
+        "id": "SW-REQ-102",
+        "title": "State transition on fault",
+        "description": "The system shall transition from NORMAL to FAULT state within 500 ms after any fault is detected.",
+        "category": "Functional",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-071"
+    },
+    {
+        "id": "SW-REQ-103",
+        "title": "State transition recovery",
+        "description": "The system shall transition from FAULT to NORMAL state only after all faults are cleared and a recovery command is received.",
+        "category": "Functional",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-071"
+    },
+    {
+        "id": "SW-REQ-104",
+        "title": "State transition verification output",
+        "description": "The system shall provide a software-accessible status indicator that reflects the current system state and last transition cause.",
+        "category": "Interface",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-071"
+    },
+    {
+        "id": "SW-REQ-105",
+        "title": "Architecture diagram artifact generation",
+        "description": "The system shall generate an exportable system architecture diagram file in PDF format from the project documentation repository.",
+        "category": "Constraint",
+        "priority": "Low",
+        "parent_sys_req": "SYS-REQ-072"
+    },
+    {
+        "id": "SW-REQ-106",
+        "title": "Schematic artifact generation",
+        "description": "The system shall include a software-controlled export of the schematic in PDF format as part of the release package.",
+        "category": "Constraint",
+        "priority": "Low",
+        "parent_sys_req": "SYS-REQ-073"
+    },
+    {
+        "id": "SW-REQ-107",
+        "title": "PCB layout artifact generation",
+        "description": "The system shall include a software-controlled export of PCB layout files in Gerber format within the release package.",
+        "category": "Constraint",
+        "priority": "Low",
+        "parent_sys_req": "SYS-REQ-074"
+    },
+    {
+        "id": "SW-REQ-108",
+        "title": "Firmware source code packaging",
+        "description": "The system shall provide the complete firmware source code in a version-controlled repository and include a tagged release for delivery.",
+        "category": "Constraint",
+        "priority": "High",
+        "parent_sys_req": "SYS-REQ-075"
+    },
+    {
+        "id": "SW-REQ-109",
+        "title": "Calibration procedure documentation",
+        "description": "The system shall include a software-accessible calibration procedure document in PDF format within the release package.",
+        "category": "Constraint",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-076"
+    },
+    {
+        "id": "SW-REQ-110",
+        "title": "Test report generation",
+        "description": "The system shall generate a test report in PDF format summarizing test cases, results, and pass/fail status for each build.",
+        "category": "Constraint",
+        "priority": "Medium",
+        "parent_sys_req": "SYS-REQ-077"
+    },
+    {
+        "id": "SW-REQ-111",
+        "title": "Demonstration video packaging",
+        "description": "The system shall include a demonstration video file in MP4 format within the release package.",
+        "category": "Constraint",
+        "priority": "Low",
+        "parent_sys_req": "SYS-REQ-078"
+    }
+]
