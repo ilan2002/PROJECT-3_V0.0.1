@@ -1,0 +1,430 @@
+{
+    "project": "Project-3",
+    "generated_date": "2026-03-30",
+    "target_mcu": {
+        "family": "STM32",
+        "recommended_series": "STM32F411RE",
+        "hal_header": "stm32f4xx_hal.h",
+        "cmsis_header": "stm32f411xe.h",
+        "cube_mx_device_header": "stm32f4xx.h"
+    },
+    "hard_rules": {
+        "code_files": [
+            "main.c",
+            "main.h"
+        ],
+        "serial_buffer_size_bytes": 128,
+        "rx_parsing_location": "interrupt_handler",
+        "interrupt_declaration_file": "main.c",
+        "interrupt_prototype_file": "main.h",
+        "all_mx_init_in_main": true
+    },
+    "gpio": {
+        "total_pins_required": 16,
+        "pins": [
+            {
+                "pin_id": "GPIOA_PIN_0",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_0",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 1",
+                "component_ref": "DD-COMP-001"
+            },
+            {
+                "pin_id": "GPIOA_PIN_1",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_1",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 2",
+                "component_ref": "DD-COMP-002"
+            },
+            {
+                "pin_id": "GPIOA_PIN_2",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_2",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 3",
+                "component_ref": "DD-COMP-003"
+            },
+            {
+                "pin_id": "GPIOA_PIN_3",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_3",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 4",
+                "component_ref": "DD-COMP-004"
+            },
+            {
+                "pin_id": "GPIOA_PIN_4",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_4",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 5",
+                "component_ref": "DD-COMP-005"
+            },
+            {
+                "pin_id": "GPIOA_PIN_5",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_5",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 6",
+                "component_ref": "DD-COMP-006"
+            },
+            {
+                "pin_id": "GPIOA_PIN_6",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_6",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 7",
+                "component_ref": "DD-COMP-007"
+            },
+            {
+                "pin_id": "GPIOA_PIN_7",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_7",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 8",
+                "component_ref": "DD-COMP-008"
+            },
+            {
+                "pin_id": "GPIOA_PIN_8",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_8",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 9",
+                "component_ref": "DD-COMP-009"
+            },
+            {
+                "pin_id": "GPIOA_PIN_9",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_9",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 10",
+                "component_ref": "DD-COMP-010"
+            },
+            {
+                "pin_id": "GPIOA_PIN_10",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_10",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 11",
+                "component_ref": "DD-COMP-011"
+            },
+            {
+                "pin_id": "GPIOA_PIN_11",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_11",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 12",
+                "component_ref": "DD-COMP-012"
+            },
+            {
+                "pin_id": "GPIOA_PIN_12",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_12",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 13",
+                "component_ref": "DD-COMP-013"
+            },
+            {
+                "pin_id": "GPIOA_PIN_13",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_13",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 14",
+                "component_ref": "DD-COMP-014"
+            },
+            {
+                "pin_id": "GPIOA_PIN_14",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_14",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 15",
+                "component_ref": "DD-COMP-015"
+            },
+            {
+                "pin_id": "GPIOA_PIN_15",
+                "port": "GPIOA",
+                "pin": "GPIO_PIN_15",
+                "direction": "OUTPUT",
+                "mode": "GPIO_MODE_OUTPUT_PP",
+                "pull": "GPIO_NOPULL",
+                "speed": "GPIO_SPEED_FREQ_LOW",
+                "purpose": "GPIO for component group 16",
+                "component_ref": "DD-COMP-016"
+            }
+        ],
+        "mx_init_call": "MX_GPIO_Init",
+        "main_h_declaration": "void MX_GPIO_Init(void);",
+        "main_c_definition": "static void MX_GPIO_Init(void) { /* HAL_GPIO_Init per pin */ }"
+    },
+    "communication_peripherals": [
+        {
+            "peripheral": "USART1",
+            "protocol": "UART",
+            "purpose": "USART1 serial communication",
+            "baud_rate_or_speed": "115200",
+            "mode": "TX_RX",
+            "rx_buffer_name": "g_usart1_rx_buf",
+            "tx_buffer_name": "g_usart1_tx_buf",
+            "rx_buffer_size_bytes": 128,
+            "tx_buffer_size_bytes": 128,
+            "uses_interrupt": true,
+            "uses_dma": false,
+            "rx_flag_name": "g_usart1_rx_ready",
+            "mx_init_call": "MX_USART1_UART_Init",
+            "main_h_declaration": "void MX_USART1_UART_Init(void);",
+            "main_c_definition": "static void MX_USART1_UART_Init(void) { /* init USART1 115200 */ }",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "peripheral": "USART2",
+            "protocol": "UART",
+            "purpose": "USART2 serial communication",
+            "baud_rate_or_speed": "115200",
+            "mode": "TX_RX",
+            "rx_buffer_name": "g_usart2_rx_buf",
+            "tx_buffer_name": "g_usart2_tx_buf",
+            "rx_buffer_size_bytes": 128,
+            "tx_buffer_size_bytes": 128,
+            "uses_interrupt": true,
+            "uses_dma": false,
+            "rx_flag_name": "g_usart2_rx_ready",
+            "mx_init_call": "MX_USART2_UART_Init",
+            "main_h_declaration": "void MX_USART2_UART_Init(void);",
+            "main_c_definition": "static void MX_USART2_UART_Init(void) { /* init USART2 115200 */ }",
+            "component_ref": "DD-COMP-004"
+        }
+    ],
+    "interrupts": [
+        {
+            "irq_name": "USART1_IRQHandler",
+            "irqn_enum": "USART1_IRQn",
+            "source": "USART1 RX",
+            "priority": 1,
+            "sub_priority": 0,
+            "purpose": "Receive and parse USART1 data",
+            "data_parsing_in_handler": true,
+            "parsing_description": "Read byte into g_usart1_rx_buf, set g_usart1_rx_ready when frame complete",
+            "buffer_used": "g_usart1_rx_buf",
+            "flag_set": "g_usart1_rx_ready",
+            "nvic_setup_calls": [
+                "HAL_NVIC_SetPriority(USART1_IRQn, 1, 0);",
+                "HAL_NVIC_EnableIRQ(USART1_IRQn);"
+            ],
+            "main_h_declaration": "void USART1_IRQHandler(void);",
+            "main_c_definition": "void USART1_IRQHandler(void) {\n  /* parse byte into g_usart1_rx_buf */\n  g_usart1_rx_ready = 1U;\n}",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "irq_name": "USART2_IRQHandler",
+            "irqn_enum": "USART2_IRQn",
+            "source": "USART2 RX",
+            "priority": 1,
+            "sub_priority": 0,
+            "purpose": "Receive and parse USART2 data",
+            "data_parsing_in_handler": true,
+            "parsing_description": "Read byte into g_usart2_rx_buf, set g_usart2_rx_ready when frame complete",
+            "buffer_used": "g_usart2_rx_buf",
+            "flag_set": "g_usart2_rx_ready",
+            "nvic_setup_calls": [
+                "HAL_NVIC_SetPriority(USART2_IRQn, 1, 0);",
+                "HAL_NVIC_EnableIRQ(USART2_IRQn);"
+            ],
+            "main_h_declaration": "void USART2_IRQHandler(void);",
+            "main_c_definition": "void USART2_IRQHandler(void) {\n  /* parse byte into g_usart2_rx_buf */\n  g_usart2_rx_ready = 1U;\n}",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "irq_name": "TIM1_IRQHandler",
+            "irqn_enum": "TIM1_IRQn",
+            "source": "TIM1 Update",
+            "priority": 2,
+            "sub_priority": 0,
+            "purpose": "TIM1 periodic tick",
+            "data_parsing_in_handler": false,
+            "parsing_description": "Increment tick, set periodic flag",
+            "buffer_used": "N/A",
+            "flag_set": "g_tim1_tick_flag",
+            "nvic_setup_calls": [
+                "HAL_NVIC_SetPriority(TIM1_IRQn, 2, 0);",
+                "HAL_NVIC_EnableIRQ(TIM1_IRQn);"
+            ],
+            "main_h_declaration": "void TIM1_IRQHandler(void);",
+            "main_c_definition": "void TIM1_IRQHandler(void) {\n  HAL_TIM_IRQHandler(&htim1);\n}",
+            "component_ref": "DD-COMP-075"
+        },
+        {
+            "irq_name": "TIM2_IRQHandler",
+            "irqn_enum": "TIM2_IRQn",
+            "source": "TIM2 Update",
+            "priority": 2,
+            "sub_priority": 0,
+            "purpose": "TIM2 periodic tick",
+            "data_parsing_in_handler": false,
+            "parsing_description": "Increment tick, set periodic flag",
+            "buffer_used": "N/A",
+            "flag_set": "g_tim2_tick_flag",
+            "nvic_setup_calls": [
+                "HAL_NVIC_SetPriority(TIM2_IRQn, 2, 0);",
+                "HAL_NVIC_EnableIRQ(TIM2_IRQn);"
+            ],
+            "main_h_declaration": "void TIM2_IRQHandler(void);",
+            "main_c_definition": "void TIM2_IRQHandler(void) {\n  HAL_TIM_IRQHandler(&htim2);\n}",
+            "component_ref": "DD-COMP-075"
+        }
+    ],
+    "main_function_init_sequence": [
+        "HAL_Init()",
+        "SystemClock_Config()",
+        "MX_GPIO_Init()",
+        "MX_USART1_UART_Init()",
+        "HAL_NVIC_SetPriority(USART1_IRQn, 1, 0)",
+        "HAL_NVIC_EnableIRQ(USART1_IRQn)",
+        "MX_USART2_UART_Init()",
+        "HAL_NVIC_SetPriority(USART2_IRQn, 1, 0)",
+        "HAL_NVIC_EnableIRQ(USART2_IRQn)",
+        "MX_TIM1_Init()",
+        "MX_TIM2_Init()"
+    ],
+    "main_h_additions": [
+        {
+            "item": "void MX_GPIO_Init(void);",
+            "purpose": "GPIO init prototype",
+            "component_ref": ""
+        },
+        {
+            "item": "void MX_USART1_UART_Init(void);",
+            "purpose": "USART1 init prototype",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "extern uint8_t g_usart1_rx_buf[128];",
+            "purpose": "USART1 RX buffer extern",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "extern volatile uint8_t g_usart1_rx_ready;",
+            "purpose": "USART1 RX ready flag",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "void MX_USART2_UART_Init(void);",
+            "purpose": "USART2 init prototype",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "extern uint8_t g_usart2_rx_buf[128];",
+            "purpose": "USART2 RX buffer extern",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "extern volatile uint8_t g_usart2_rx_ready;",
+            "purpose": "USART2 RX ready flag",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "void MX_TIM1_Init(void);",
+            "purpose": "TIM1 timer init prototype",
+            "component_ref": "DD-COMP-075"
+        },
+        {
+            "item": "void MX_TIM2_Init(void);",
+            "purpose": "TIM2 timer init prototype",
+            "component_ref": "DD-COMP-075"
+        }
+    ],
+    "main_c_additions": [
+        {
+            "item": "static void MX_GPIO_Init(void) { /* configure pins */ }",
+            "purpose": "GPIO init definition",
+            "component_ref": ""
+        },
+        {
+            "item": "uint8_t          g_usart1_rx_buf[128] = {0};",
+            "purpose": "USART1 RX buffer",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "uint8_t          g_usart1_tx_buf[128] = {0};",
+            "purpose": "USART1 TX buffer",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "volatile uint8_t g_usart1_rx_ready = 0U;",
+            "purpose": "USART1 RX flag",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "uint8_t          g_usart2_rx_buf[128] = {0};",
+            "purpose": "USART2 RX buffer",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "uint8_t          g_usart2_tx_buf[128] = {0};",
+            "purpose": "USART2 TX buffer",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "volatile uint8_t g_usart2_rx_ready = 0U;",
+            "purpose": "USART2 RX flag",
+            "component_ref": "DD-COMP-004"
+        },
+        {
+            "item": "static void MX_TIM1_Init(void) { /* init TIM1 */ }",
+            "purpose": "TIM1 timer init",
+            "component_ref": "DD-COMP-075"
+        },
+        {
+            "item": "static void MX_TIM2_Init(void) { /* init TIM2 */ }",
+            "purpose": "TIM2 timer init",
+            "component_ref": "DD-COMP-075"
+        }
+    ],
+    "notes": "ADC sampling with DMA, PWM actuator drive, UART command/diagnostics, independent watchdog, internal flash for config/calibration storage."
+}
