@@ -1,0 +1,440 @@
+# Software Design Document (SDD) — IEEE 1016  
+**Project:** Project-3  
+**Date:** 2025-02-14  
+**Version:** 1.0
+
+---
+
+## 1. Introduction & Purpose
+This Software Design Document (SDD) defines the architecture and detailed design for Project-3. It follows IEEE 1016 and specifies structural decomposition, component responsibilities, interfaces, data design, key design decisions, and component-to-requirement traceability. The design targets an embedded control system with safety monitoring, UART command interfaces, configuration management, and artifact generation for release.
+
+---
+
+## 2. System Architecture Overview
+### 2.1 Architectural Style
+The system employs a **layered architecture** with the following tiers:
+- **Application/Control Layer:** state machines, control algorithms, safety gates.
+- **Service Layer:** schedulers, validation, diagnostics, command processing.
+- **Middleware/Driver/HAL:** hardware access, timers, ADC, UART, watchdog.
+- **Persistence & Configuration:** configuration storage, NVM repositories, log stores.
+- **Release/Tooling:** compliance and artifact generation.
+
+### 2.2 Key Runtime Flows
+- **Control Loop Execution:** Periodic scheduler triggers ADC sampling → validation/scaling → control computation → actuator drive.
+- **Command Handling:** UART parsing → validation → state transitions/actuator enable/disable → acknowledgements.
+- **Safety Monitoring:** Continuous ADC validity, range checks, over/under voltage, overcurrent, thermal, stall, saturation → fault handling and safe state.
+- **Startup Safety:** hardware outputs disabled until initialization and delay conditions are met.
+
+### 2.3 Architectural Dependencies (High-Level)
+- Control logic depends on ADC acquisition and configuration services.
+- Safety modules depend on fault manager and actuator driver.
+- UART services depend on driver, parser, and command routing.
+- State management relies on fault/event buses and recovery handlers.
+
+---
+
+## 3. Module Descriptions
+Each module definition includes purpose, components, and interactions.
+
+### 3.1 ControlModule
+**Purpose:** Execute control algorithms and actuator command generation.  
+**Components:** DD-COMP-001, 002, 016, 020, 027, 030, 031, 037, 052, 088, 089, 092, 110, 112, 115.  
+**Interactions:** Reads ADC samples from Sensor/Sensing modules, uses ConfigModule parameters, outputs to Actuator/Driver/HAL.
+
+### 3.2 SensorModule
+**Purpose:** Sample and provide ADC feedback.  
+**Components:** DD-COMP-003, 111.  
+**Interactions:** Uses ADC drivers and publishes sample data to safety/control logic.
+
+### 3.3 CommModule / UartModule / CommsModule / CommunicationModule / UartCommModule
+**Purpose:** UART command parsing, diagnostics, acknowledgements, and status reporting.  
+**Components:** DD-COMP-004, 005, 006, 007, 028, 029, 032, 058, 059, 060, 061, 063, 093, 094, 095, 096, 097, 098, 114.  
+**Interactions:** Interfaces with UART driver, command handlers, state machine, and diagnostics.
+
+### 3.4 ConfigModule
+**Purpose:** Provide runtime configuration and NVM-backed settings.  
+**Components:** DD-COMP-008, 009, 025, 026, 043, 049, 065, 066.  
+**Interactions:** Supplies control gains, thresholds, voltage limits to control and safety modules.
+
+### 3.5 SafetyModule / SafetyControlModule / FaultMonitoringModule / PowerSafetyModule / PowerMonitoringModule
+**Purpose:** Detect invalid conditions, enforce safe state, and report faults.  
+**Components:** DD-COMP-010, 011, 012, 013, 014, 022, 023, 038, 040, 042, 044, 045, 050, 051, 053, 055, 056, 057, 090, 091, 099, 100, 101, 102, 103, 105, 113.  
+**Interactions:** Uses ADC data, config thresholds, and actuates safe/disable commands via actuator interfaces.
+
+### 3.6 SchedulerModule / ControlLoopModule / ADCModule / AdcModule
+**Purpose:** Deterministic scheduling for control and ADC sampling.  
+**Components:** DD-COMP-021, 033, 034, 035, 069, 070, 071, 072, 089, 110.  
+**Interactions:** Uses timers and drivers to trigger ADC capture and control execution.
+
+### 3.7 SignalProcessingModule / SensorProcessingModule
+**Purpose:** Scale and process raw sensor data.  
+**Components:** DD-COMP-019, 106.  
+**Interactions:** Uses calibration repositories and provides normalized outputs.
+
+### 3.8 HAL / HALModule / HardwareAbstractionLayer / Driver / Middleware
+**Purpose:** Provide hardware interface implementations.  
+**Components:** DD-COMP-017, 018, 024, 046, 076, 077, 078, 079, 080.  
+**Interactions:** Hardware drivers for ADC, UART, PWM, GPIO, timers.
+
+### 3.9 StartupModule
+**Purpose:** Enforce post-reset safety delays.  
+**Components:** DD-COMP-067, 068.  
+**Interactions:** Coordinates with timers and control loop scheduler to enable outputs.
+
+### 3.10 Application / StateModule / StateManagementModule / StateMachineModule
+**Purpose:** System state transitions and fault-to-state handling.  
+**Components:** DD-COMP-081, 082, 083, 084, 120, 121, 122, 123, 124, 125.  
+**Interactions:** Consumes fault events and commands; updates system state.
+
+### 3.11 Logging & Data Layers
+**Purpose:** Persist fault logs and invalid command logs.  
+**Components:** DD-COMP-064, 118, 119, 107.  
+**Interactions:** Time services and NVM storage.
+
+### 3.12 Compliance & Release Tooling
+**Purpose:** MISRA compliance and artifact generation.  
+**Components:** DD-COMP-015, 126, 127, 128, 129, 130, 131, 132, 133, 134.  
+**Interactions:** Documentation repositories, EDA tools, packaging.
+
+---
+
+## 4. Component Design Details
+**Legend:** Purpose/Inputs/Outputs/Dependencies/Pattern abbreviated for brevity.
+
+| ID | Component | Purpose (Summary) | Inputs → Outputs | Dependencies | Pattern |
+|---|---|---|---|---|---|
+| DD-COMP-001 | ControlLoopTask | Periodic closed-loop task | Valid ADC, target → actuator command | ADCValidation, Config, Driver | Observer |
+| DD-COMP-002 | PIDControlAlgorithm | PID control computation | target, feedback, gains → control output | ConfigStore | — |
+| DD-COMP-003 | ADCSampler | ADC sampling service | rate/config → raw samples | Config, ADCDriver | Factory |
+| DD-COMP-004 | UARTCommandHandler | UART command processing | UART frames → target/mode | UARTDriver, Parser | Command |
+| DD-COMP-005 | CommandParser | Parse bytes to commands | bytes → command objects | UARTProtocolConfig | Builder |
+| DD-COMP-006 | UARTDiagnosticsService | Diagnostic response | diag request → UART frame | SystemState, FaultMgr | Facade |
+| DD-COMP-007 | UARTDriverConfig | UART 115200 8N1 | fixed config → UART init | HAL | Singleton |
+| DD-COMP-008 | ConfigService | Runtime configuration | requests → config values | ConfigStore | Repository |
+| DD-COMP-009 | ConfigStore | NVM/RAM config store | writes/reads → values | NVMDriver | Repository |
+| DD-COMP-010 | ADCValidationService | ADC sample validation | raw samples → validated | FaultMgr | Chain |
+| DD-COMP-011 | UARTFaultHandler | UART integrity faults | frames/errors → faults | FaultMgr | Strategy |
+| DD-COMP-012 | FaultManager | Fault aggregation | events → safe state cmd | SafeStateController | Observer |
+| DD-COMP-013 | SafeStateController | Actuator safe mode | safe command → disable | ActuatorDriver | State |
+| DD-COMP-014 | CalibrationStore | ADC min/max | updates → limits | ConfigStore | Repository |
+| DD-COMP-015 | MISRA Compliance Process | MISRA workflow | source → reports | Build/Tools | — |
+| DD-COMP-016 | Supply Voltage Assumption | 12V scaling | const → scaling factor | ControlOutputCalc | Singleton |
+| DD-COMP-017 | ADC Channel Configuration | ADC channel init | cfg → handle | MCU_ADC | Factory |
+| DD-COMP-018 | ADC Read Service | Read ADC | handle → raw value | MCU_ADC | — |
+| DD-COMP-019 | Position Scaling Algorithm | ADC→position | raw/min/max → normalized | CalibrationRepo | — |
+| DD-COMP-020 | Control Output Calculator | Control output | pos/target → command | SupplyVoltage, Scaling | Strategy |
+| DD-COMP-021 | Control Loop Scheduler | 10ms loop | tick → events | TimerDriver | Observer |
+| DD-COMP-022 | Feedback Fault Monitor | invalid persistence | adc/valid → fault | FaultReporter | State |
+| DD-COMP-023 | Fault Reporter | Report faults | code/time → report | Diagnostics, LogStorage | — |
+| DD-COMP-024 | Actuator Drive Output | Drive signal | command/disable → PWM | MCU_PWM | — |
+| DD-COMP-025 | ThresholdConfigRepository | Shipping threshold | value → stored | NVMDriver | Repository |
+| DD-COMP-026 | ThresholdConfigService | Load threshold | init/get → active threshold | Repository | Singleton |
+| DD-COMP-027 | ShippingPositionStopLogic | Stop at threshold | samples/threshold → stop | ActuatorDriver | Observer |
+| DD-COMP-028 | UartCommandParser | ON/OFF parsing | frames → events | UartDriver | Observer |
+| DD-COMP-029 | UartCommandParser_OFF | OFF path | frames → OFF event | UartDriver | Observer |
+| DD-COMP-030 | ActuatorStateMachine | ON/OFF states | events → enable/disable | ActuatorDriver | State |
+| DD-COMP-031 | ActuatorStateMachine_OFF | OFF transition | OFF event → disable | ActuatorDriver | State |
+| DD-COMP-032 | UartAckService | ACK within 20ms | events → ACK frame | UartDriver | Observer |
+| DD-COMP-033 | AdcDriverConfig | ADC 12-bit init | init/cfg → status | HAL | Facade |
+| DD-COMP-034 | AdcSamplingScheduler | ≥1kHz sampling | ticks → buffer | TimerDriver | Producer-Consumer |
+| DD-COMP-035 | AdcContinuousAcquisition | Continuous sampling | events → samples | Scheduler | Observer |
+| DD-COMP-036 | ADC Sample Buffer | Latest sample | raw/time → latest | ADCDriver | Singleton |
+| DD-COMP-037 | Flap Control Computation | Control from ADC | latest/threshold → command | SampleBuffer | Strategy |
+| DD-COMP-038 | Actuation Range Guard | 500–2600 guard | adc/req → guarded | SampleBuffer | Decorator |
+| DD-COMP-039 | ADC Freshness Check | ≤2ms check | time/latest → is_fresh | SampleBuffer | — |
+| DD-COMP-040 | Open-Loop Inhibit Gate | Block if invalid | adc_valid/req → inhibit | ValidityMonitor | Chain |
+| DD-COMP-041 | ADC Validity Monitor | Validity state | adc/time → adc_valid | SampleBuffer | Observer |
+| DD-COMP-042 | Drive Permission Check | Range check | adc/req → allowed | SampleBuffer | — |
+| DD-COMP-043 | Target ADC Validator | Validate target | proposed → accepted | ThresholdStore | Factory |
+| DD-COMP-044 | ActuatorSafetyMonitor | Disable out-of-range | adc/tick → disable | DriveService | Observer |
+| DD-COMP-045 | ActuatorTargetStopController | Stop at target | adc/target → STOP | TargetConfig | Strategy |
+| DD-COMP-046 | SupplyVoltageADCChannelConfig | Voltage ADC init | cfg → handle | ADCDriver | Facade |
+| DD-COMP-047 | SupplyVoltageScaler | Compute voltage | raw/ratio → voltage | ADCChannelCfg | — |
+| DD-COMP-048 | SupplyVoltageSampler | Sample voltage | tick → cache update | ADCService | Observer |
+| DD-COMP-049 | OvervoltageThresholdStore | Store threshold | write/read → value | NVMDriver | Repository |
+| DD-COMP-050 | OvervoltageDetector | Compare to threshold | voltage/threshold → flag | Sampler | Observer |
+| DD-COMP-051 | OvervoltageDriveDisabler | Disable drive | flag/tick → disable | Detector | Observer |
+| DD-COMP-052 | ActuatorCommandGate | Reject on fault | cmd/ov/ state → accept/reject | OvervoltageMon | Guard |
+| DD-COMP-053 | FaultTransitionHandler | Transition to FAULT | ov event → state change | StateMachine | Observer |
+| DD-COMP-054 | OvervoltageUartNotifier | UART fault msg | ov change → UART msg | OvervoltageMon | Observer |
+| DD-COMP-055 | FaultStateRetentionLogic | Hold FAULT until clear | voltage/reset/cmd → transition | StateMachine | State |
+| DD-COMP-056 | FaultExitVoltageChecker | 100ms voltage check | tick/voltage → within limits | VoltageSampler | Scheduler |
+| DD-COMP-057 | OvervoltageMonitor | Evaluate every 100ms | samples/thresh → status | VoltageSampler | Observer |
+| DD-COMP-058 | UartActuatorCommandInterface | UART command intake | bytes → command | Parser/Gate | Facade |
+| DD-COMP-059 | ActuatorOnCommandParser | Parse ACTUATOR_ON | token → command | CommandParser | Factory |
+| DD-COMP-060 | UART Command Parser | Tokenize UART | bytes → ParsedCommand | Dispatcher | — |
+| DD-COMP-061 | Command Dispatcher | Route commands | ParsedCommand → result | ActuatorController | Command |
+| DD-COMP-062 | Actuator Controller | Enable/disable actuator | command → state | GPIO/PWM | Facade |
+| DD-COMP-063 | Invalid Command Handler | Ignore invalid | raw → ignored | LoggingService | — |
+| DD-COMP-064 | Invalid Command Logger | Persist invalid cmds | time/raw → log | LogStorage | Repository |
+| DD-COMP-065 | Voltage Configuration Store | Nominal voltage | write/read → nominal | ConfigInit | Singleton |
+| DD-COMP-066 | Voltage Range Configuration | 9–16V limits | min/max → range | VoltageConfigStore | — |
+| DD-COMP-067 | Startup Safety Manager | Disable outputs at boot | reset/init → outputs_enabled | GPIO/PWM | State |
+| DD-COMP-068 | StartupDelayManager | 50ms delay | reset/timer → ready | TimerService | State |
+| DD-COMP-069 | ADCResolutionConfigurator | Set 12-bit | init → status | HAL_ADC | — |
+| DD-COMP-070 | ADCReferenceConfigurator | Set 3.3V ref | init → status | HAL_ADC | — |
+| DD-COMP-071 | ADCSamplingScheduler | ≥1kHz sampling | clock/rate → events | Timer/ADC | Observer |
+| DD-COMP-072 | ADCSaturationDetector | 5 max counts → fault | sample/max → fault | StateMgr | State |
+| DD-COMP-073 | ADCPinInitializer | PA1 analog | init → status | HAL_GPIO | — |
+| DD-COMP-074 | ActuatorGPIOInitializer | PA5 output init | init → status | HAL_GPIO | — |
+| DD-COMP-075 | PWMTimerInitializer | PWM timer | freq/res → handle | HAL_TIM | Factory |
+| DD-COMP-076 | UART Peripheral Initializer | UART HW init | cfg → handle | Clock/GPIO/IRQ | Factory |
+| DD-COMP-077 | ADC DMA Configuration Service | DMA setup | cfg → DMA handle | HAL_DMA | Facade |
+| DD-COMP-078 | Independent Watchdog Service | Enable/refresh | timeout/tick → kick | HAL_WDG | Singleton |
+| DD-COMP-079 | Clock and Timer Configuration | 1ms timer | cfg → handles | Osc/Timer | Factory |
+| DD-COMP-080 | Layered Architecture Enforcement Interface | HW access API | requests → results | HW Facade | Adapter |
+| DD-COMP-081 | System State Machine | INIT/IDLE/ACTIVE/FAULT | events → state | FaultMgr | State |
+| DD-COMP-082 | Reset Initialization Handler | INIT on reset | reset → init trigger | StateMachine | Observer |
+| DD-COMP-083 | Nominal Transition Controller | Nominal transitions | commands → transition | StateMachine | Command |
+| DD-COMP-084 | FaultStateManager | FAULT retention | fault/reset → next state | FaultMonitor | State |
+| DD-COMP-085 | HardwareWatchdogInitializer | WDG init | timeout → handle | HAL_WDG | Factory |
+| DD-COMP-086 | WatchdogServicer | Periodic kick | tick/run → kick | Scheduler | Observer |
+| DD-COMP-087 | FatalMalfunctionResetHandler | Inhibit WDG | fatal event → disable | DiagnosticsLogger | Command |
+| DD-COMP-088 | ADCOnlyControlAlgorithm | ADC-only control | raw ADC → command | ControlState | Strategy |
+| DD-COMP-089 | ControlLoopScheduler | ≤1ms loop | timer → trigger | RTOS/HRTimer | Singleton |
+| DD-COMP-090 | ThresholdStopEvaluator | Stop on threshold | raw/threshold → stop | ActuatorController | — |
+| DD-COMP-091 | HysteresisBandManager | Prevent chatter | adc/band → filtered stop | ThresholdConfig | State |
+| DD-COMP-092 | RawAdcDataPolicy | Enforce raw ADC use | raw → raw only | AdcDriver | Facade |
+| DD-COMP-093 | UartStatusScheduler | Periodic status | interval → tx request | Timer/Uart | Observer |
+| DD-COMP-094 | UartStatusMessageBuilder | Build status frame | adc/state/fault → frame | UartDriver | Builder |
+| DD-COMP-095 | UartConfigService | UART init | cfg → UART state | HAL | Singleton |
+| DD-COMP-096 | UartBaudRateConfig | Set 115200 | clock → divisor | UartDriver | — |
+| DD-COMP-097 | UartFrameFormatConfig | Set 8N1 | params → registers | UartDriver | — |
+| DD-COMP-098 | UartTransmitIntervalValidator | ≤100ms interval | config → validated | ConfigStore | — |
+| DD-COMP-099 | OvercurrentMonitor | Current threshold | adc/thresh → fault | ActuatorControl | Observer |
+| DD-COMP-100 | ThermalMonitor | Temp threshold | adc/thresh → fault | ActuatorControl | Observer |
+| DD-COMP-101 | StallDetectionService | Motion stall detect | cmd/adc/delta → fault | FaultMgr | State |
+| DD-COMP-102 | ShortCircuitDetector | Short-circuit detect | flags/adc → fault | FaultMgr | Observer |
+| DD-COMP-103 | UndervoltageMonitor | <9V fault | voltage → fault | FaultMgr | Observer |
+| DD-COMP-104 | WatchdogService | WDG init/service/log | tick/reset → kick/log | FaultLog | Singleton |
+| DD-COMP-105 | FaultStateTransitionHandler | Same-cycle FAULT | fault queue → FAULT | FaultMgr | State |
+| DD-COMP-106 | TemperatureProcessing | Fixed-point scaling | raw/cal → temp | CalibrationStore | — |
+| DD-COMP-107 | NvmConfigStorage | NVM config store | read/write → data | NVMDriver | Repository |
+| DD-COMP-108 | HumidityIndependencePolicy | No humidity dependency | config → compliance | BuildFlags | — |
+| DD-COMP-109 | AdcAcquisitionService | ADC sampling loop | tick/ch → latest | AdcDriver | Producer-Consumer |
+| DD-COMP-110 | ControlLoopScheduler | Control loop execute | tick/adc → command | ADCReader | Observer |
+| DD-COMP-111 | ADCReader | Latest ADC cache | regs → latest | ADCHAL | Singleton |
+| DD-COMP-112 | CommandCalculator | Compute command | adc/params → command | ParamsStore | Strategy |
+| DD-COMP-113 | ShippingLimitGuard | Limit inhibit | adc/threshold → stop | ConfigStore | Decorator |
+| DD-COMP-114 | UARTCommandHandler | ON/OFF dispatch | UART → enable | ActuatorEnableCtrl | Command |
+| DD-COMP-115 | ActuatorEnableController | Maintain enable state | cmd → enable | ActuatorDriver | State |
+| DD-COMP-116 | FaultMonitor | Detect faults ≤100ms | inputs/tick → events | FaultInputs | Observer |
+| DD-COMP-117 | FaultInputProvider | Fault IO abstraction | pins/flags → states | HW HAL | Adapter |
+| DD-COMP-118 | FaultLogger | Persist faults ≤1s | event → log | NVM | Observer |
+| DD-COMP-119 | FaultLogStore | Fault log storage | record → id | NVMDriver | Repository |
+| DD-COMP-120 | SystemStateMachine | NORMAL→FAULT ≤500ms | faults/tick → state | FaultBus | State |
+| DD-COMP-121 | FaultToStateTransitionService | Drive FAULT transition | fault events → transition | StateMachine | Observer |
+| DD-COMP-122 | RecoveryCommandHandler | FAULT recovery | command → transition | FaultTracker | Command |
+| DD-COMP-123 | FaultStatusTracker | Active fault set | fault events → status | FaultBus | Observer |
+| DD-COMP-124 | StateStatusProvider | Publish state | state changes → status | StateMachine | Observer |
+| DD-COMP-125 | StateStatusAPI | State query API | query → status | StateStatusProvider | Facade |
+| DD-COMP-126 | ArchitectureDiagramExporter | Export diagrams | repo/meta → PDF | DocRepo | Facade |
+| DD-COMP-127 | DocumentationRepositoryAdapter | Access doc repo | url/cred → files | GitClient | Repository |
+| DD-COMP-128 | SchematicPdfExporter | Export schematic | EDA src → PDF | EDA Tool | Facade |
+| DD-COMP-129 | PcbGerberExporter | Export Gerbers | PCB src → gerbers | EDA Tool | Facade |
+| DD-COMP-130 | FirmwareReleaseTagger | Tag firmware | repo/ver → tag | GitClient | Command |
+| DD-COMP-131 | CalibrationDocIncluder | Include calibration PDF | path → pkg entry | DocRepo | Facade |
+| DD-COMP-132 | TestReportGenerator | PDF test report | results → PDF | Repo/Template | Builder |
+| DD-COMP-133 | DemonstrationVideoIncluder | Include demo video | video → pkg entry | MediaValidator | Facade |
+| DD-COMP-134 | ReleasePackageBuilder | Assemble release | artifacts → package | FS | Builder |
+
+---
+
+## 5. Component Design Details (Key Behavioral Notes)
+- **Deterministic Scheduling:** Control loops at 1 ms or 10 ms depending on subsystem requirement (DD-COMP-021, 089, 110).
+- **Safety Interlocks:** Guard and inhibit layers enforce raw ADC bounds, freshness, and fault state gating (DD-COMP-038, 040, 042, 044, 051, 052).
+- **Fault Handling:** Multi-source fault aggregation, deterministic transitions, retention logic (DD-COMP-012, 053, 055, 084, 105, 121).
+- **UART Latency Contracts:** Parsing and acknowledgements ensure ≤50 ms for command dispatch and ≤20 ms for ACK (DD-COMP-028, 029, 032).
+- **Raw ADC Policy:** Control computations strictly use raw ADC data; conversion to engineering units is segregated (DD-COMP-092, 088, 106).
+
+---
+
+## 6. Data Design
+### 6.1 Key Data Models
+- **ADC Sample Buffer:** `{ value:int, timestamp_us:uint64 }` (DD-COMP-036).
+- **Fault Event:** `{ fault_code, timestamp, severity }` (DD-COMP-116/118).
+- **System State Status:** `{ current_state, last_transition_cause }` (DD-COMP-124).
+- **Configuration Sets:** 
+  - Control gains (Kp/Ki/Kd), ADC sampling rates, UART timeouts (DD-COMP-008/009).
+  - Shipping threshold (DD-COMP-025/026).
+  - Overvoltage threshold (DD-COMP-049).
+  - Voltage range (DD-COMP-066).
+
+### 6.2 Database/Store Concepts
+- **ConfigStore (NVM/RAM):** key/value with defaults.
+- **CalibrationStore:** min/max ADC values for scaling.
+- **FaultLogStore:** append-only fault records with timestamp.
+
+### 6.3 Persistence
+- **NvmConfigStorage:** integrity checks on format/version only (DD-COMP-107).
+
+---
+
+## 7. Interface Design
+### 7.1 UART Interfaces
+- **Command Frames:** ON/OFF commands, diagnostic requests, ACK responses.
+- **Baud/Format:** 115200, 8N1 enforced (DD-COMP-007, 095, 096, 097).
+- **Latency Constraints:** ACK within 20 ms, command dispatch within 50 ms.
+
+### 7.2 Internal APIs
+- **StateStatusAPI:** `GET /state` → `{state, cause}` (DD-COMP-125).
+- **Hardware Abstraction Interface:** `read_adc()`, `write_uart()`, `set_gpio()` (DD-COMP-080).
+
+### 7.3 Timing Interfaces
+- **Scheduler Hooks:** `on_tick()` for loop tasks (DD-COMP-021, 089, 110).
+- **Watchdog:** `watchdog_kick()` (DD-COMP-078, 086, 104).
+
+---
+
+## 8. Design Decisions & Rationale
+1. **Observer Pattern for Events:** Ensures timely propagation for faults and state changes without tight coupling.
+2. **State Machines for Safety and Control:** Deterministic transitions required for safety compliance.
+3. **Raw ADC-Only Policy:** Ensures control path uses unmodified sensor data; reduces conversion-induced errors.
+4. **Layered Architecture Enforcement:** Prevents direct hardware access from application logic.
+5. **NVM Repository Pattern:** Simplifies persistence and version management.
+6. **Deterministic Scheduling:** Fixed-period loops to meet control and safety timing requirements.
+7. **Safety Guards & Inhibitors:** Multiple gates enforce independent safety constraints.
+
+---
+
+## 9. Component-to-Requirement Traceability
+| Component ID | Requirement |
+|---|---|
+| DD-COMP-001 | SW-REQ-001 |
+| DD-COMP-002 | SW-REQ-001 |
+| DD-COMP-003 | SW-REQ-002 |
+| DD-COMP-004 | SW-REQ-003 |
+| DD-COMP-005 | SW-REQ-003 |
+| DD-COMP-006 | SW-REQ-004 |
+| DD-COMP-007 | SW-REQ-005 |
+| DD-COMP-008 | SW-REQ-006 |
+| DD-COMP-009 | SW-REQ-006 |
+| DD-COMP-010 | SW-REQ-007 |
+| DD-COMP-011 | SW-REQ-007 |
+| DD-COMP-012 | SW-REQ-007 |
+| DD-COMP-013 | SW-REQ-008 |
+| DD-COMP-014 | SW-REQ-008 |
+| DD-COMP-015 | SW-REQ-009 |
+| DD-COMP-016 | SW-REQ-010 |
+| DD-COMP-017 | SW-REQ-011 |
+| DD-COMP-018 | SW-REQ-012 |
+| DD-COMP-019 | SW-REQ-013 |
+| DD-COMP-020 | SW-REQ-014 |
+| DD-COMP-021 | SW-REQ-015 |
+| DD-COMP-022 | SW-REQ-016 |
+| DD-COMP-023 | SW-REQ-016 |
+| DD-COMP-024 | SW-REQ-014 |
+| DD-COMP-025 | SW-REQ-017 |
+| DD-COMP-026 | SW-REQ-017 |
+| DD-COMP-027 | SW-REQ-018 |
+| DD-COMP-028 | SW-REQ-019 |
+| DD-COMP-029 | SW-REQ-020 |
+| DD-COMP-030 | SW-REQ-019 |
+| DD-COMP-031 | SW-REQ-020 |
+| DD-COMP-032 | SW-REQ-021 |
+| DD-COMP-033 | SW-REQ-023 |
+| DD-COMP-034 | SW-REQ-024 |
+| DD-COMP-035 | SW-REQ-022 |
+| DD-COMP-036 | SW-REQ-025 |
+| DD-COMP-037 | SW-REQ-026 |
+| DD-COMP-038 | SW-REQ-027 |
+| DD-COMP-039 | SW-REQ-028 |
+| DD-COMP-040 | SW-REQ-029 |
+| DD-COMP-041 | SW-REQ-030 |
+| DD-COMP-042 | SW-REQ-031 |
+| DD-COMP-043 | SW-REQ-032 |
+| DD-COMP-044 | SW-REQ-033 |
+| DD-COMP-045 | SW-REQ-034 |
+| DD-COMP-046 | SW-REQ-035 |
+| DD-COMP-047 | SW-REQ-036 |
+| DD-COMP-048 | SW-REQ-037 |
+| DD-COMP-049 | SW-REQ-038 |
+| DD-COMP-050 | SW-REQ-039 |
+| DD-COMP-051 | SW-REQ-040 |
+| DD-COMP-052 | SW-REQ-041 |
+| DD-COMP-053 | SW-REQ-042 |
+| DD-COMP-054 | SW-REQ-043 |
+| DD-COMP-055 | SW-REQ-044 |
+| DD-COMP-056 | SW-REQ-045 |
+| DD-COMP-057 | SW-REQ-046 |
+| DD-COMP-058 | SW-REQ-047 |
+| DD-COMP-059 | SW-REQ-048 |
+| DD-COMP-060 | SW-REQ-049 |
+| DD-COMP-061 | SW-REQ-050 |
+| DD-COMP-062 | SW-REQ-051 |
+| DD-COMP-063 | SW-REQ-052 |
+| DD-COMP-064 | SW-REQ-053 |
+| DD-COMP-065 | SW-REQ-054 |
+| DD-COMP-066 | SW-REQ-055 |
+| DD-COMP-067 | SW-REQ-056 |
+| DD-COMP-068 | SW-REQ-057 |
+| DD-COMP-069 | SW-REQ-058 |
+| DD-COMP-070 | SW-REQ-059 |
+| DD-COMP-071 | SW-REQ-060 |
+| DD-COMP-072 | SW-REQ-061 |
+| DD-COMP-073 | SW-REQ-062 |
+| DD-COMP-074 | SW-REQ-063 |
+| DD-COMP-075 | SW-REQ-064 |
+| DD-COMP-076 | SW-REQ-065 |
+| DD-COMP-077 | SW-REQ-066 |
+| DD-COMP-078 | SW-REQ-067 |
+| DD-COMP-079 | SW-REQ-068 |
+| DD-COMP-080 | SW-REQ-069 |
+| DD-COMP-081 | SW-REQ-070 |
+| DD-COMP-082 | SW-REQ-071 |
+| DD-COMP-083 | SW-REQ-072 |
+| DD-COMP-084 | SW-REQ-073 |
+| DD-COMP-085 | SW-REQ-074 |
+| DD-COMP-086 | SW-REQ-075 |
+| DD-COMP-087 | SW-REQ-076 |
+| DD-COMP-088 | SW-REQ-077 |
+| DD-COMP-089 | SW-REQ-078 |
+| DD-COMP-090 | SW-REQ-079 |
+| DD-COMP-091 | SW-REQ-080 |
+| DD-COMP-092 | SW-REQ-081 |
+| DD-COMP-093 | SW-REQ-082 |
+| DD-COMP-094 | SW-REQ-082 |
+| DD-COMP-095 | SW-REQ-083 |
+| DD-COMP-096 | SW-REQ-083 |
+| DD-COMP-097 | SW-REQ-084 |
+| DD-COMP-098 | SW-REQ-085 |
+| DD-COMP-099 | SW-REQ-086 |
+| DD-COMP-100 | SW-REQ-087 |
+| DD-COMP-101 | SW-REQ-088 |
+| DD-COMP-102 | SW-REQ-089 |
+| DD-COMP-103 | SW-REQ-090 |
+| DD-COMP-104 | SW-REQ-091 |
+| DD-COMP-105 | SW-REQ-092 |
+| DD-COMP-106 | SW-REQ-093 |
+| DD-COMP-107 | SW-REQ-094 |
+| DD-COMP-108 | SW-REQ-095 |
+| DD-COMP-109 | SW-REQ-096 |
+| DD-COMP-110 | SW-REQ-097 |
+| DD-COMP-111 | SW-REQ-097 |
+| DD-COMP-112 | SW-REQ-097 |
+| DD-COMP-113 | SW-REQ-098 |
+| DD-COMP-114 | SW-REQ-099 |
+| DD-COMP-115 | SW-REQ-099 |
+| DD-COMP-116 | SW-REQ-100 |
+| DD-COMP-117 | SW-REQ-100 |
+| DD-COMP-118 | SW-REQ-101 |
+| DD-COMP-119 | SW-REQ-101 |
+| DD-COMP-120 | SW-REQ-102 |
+| DD-COMP-121 | SW-REQ-102 |
+| DD-COMP-122 | SW-REQ-103 |
+| DD-COMP-123 | SW-REQ-103 |
+| DD-COMP-124 | SW-REQ-104 |
+| DD-COMP-125 | SW-REQ-104 |
+| DD-COMP-126 | SW-REQ-105 |
+| DD-COMP-127 | SW-REQ-105 |
+| DD-COMP-128 | SW-REQ-106 |
+| DD-COMP-129 | SW-REQ-107 |
+| DD-COMP-130 | SW-REQ-108 |
+| DD-COMP-131 | SW-REQ-109 |
+| DD-COMP-132 | SW-REQ-110 |
+| DD-COMP-133 | SW-REQ-111 |
+| DD-COMP-134 | SW-REQ-106 |
+
+---
+
+**End of SDD**
