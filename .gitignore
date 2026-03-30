@@ -1,0 +1,18 @@
+# Build artifacts
+Debug/
+Release/
+build/
+Build/
+*.o
+*.d
+*.su
+*.elf
+*.bin
+*.hex
+*.map
+
+# Tool/cache files
+.vscode/
+__pycache__/
+*.pyc
+.DS_Store
